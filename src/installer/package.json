@@ -1,0 +1,15 @@
+{
+    "name": "hep-installer",
+    "version": "1.0.0",
+    "description": "hep-installer",
+    "main": "index.js",
+    "license": "MIT",
+    "private": true,
+    "bin": {
+        "hepi": "./index.js"
+    },
+    "pkg": {
+        "scripts": "./**/*.js",
+        "assets": ".assets/**/*"
+    }
+}
