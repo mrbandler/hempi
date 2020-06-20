@@ -1,9 +1,33 @@
-import { exec } from "pkg";
+import "reflect-metadata";
+import pkg from "../package.json";
+import commander from "commander";
+import Container from "typedi";
+import { Options } from "./types/options";
+import { InstallerBuilder } from "./services/InstallerBuilder";
 
-async function build(): Promise<void> {
-    await exec([`${__dirname}/installer`, "-o", "hepi"]);
+/**
+ * CLI main entry point.
+ */
+async function main() {
+    const cli = new commander.Command();
+    cli.version(pkg.version)
+        .description("Hepi - Highly Efficient Package Installer | CLI to create custom installers for windows based systems")
+        .option("-c, --config <config.yml>", "Installer configuration")
+        .option("-o, --output <installer.exe>", "Output path for the custom installer")
+        .option("-off, --offline", "Whether the installers should be downloaded for a custom offline installer")
+        .parse(process.argv);
+
+    if (!process.argv.slice(2).length) {
+        cli.outputHelp();
+    } else {
+        const options = cli.opts() as Options;
+
+        const builder = Container.get<InstallerBuilder>(InstallerBuilder);
+        await builder.build(options);
+    }
 }
 
-build()
-    .then(() => console.log("Build done!"))
+// Calling the main entry point.
+main()
+    .then(() => console.log("Build successfull!"))
     .catch((error: Error) => console.error(error.message));

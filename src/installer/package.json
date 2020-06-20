@@ -8,6 +8,9 @@
     "bin": {
         "hepi": "./index.js"
     },
+    "files": [
+        "assets"
+    ],
     "pkg": {
         "scripts": "./**/*.js",
         "assets": ".assets/**/*"

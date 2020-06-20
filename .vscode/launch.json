@@ -8,14 +8,15 @@
             "name": "Debug",
             "type": "node",
             "request": "launch",
-            "args": ["${workspaceRoot}/src/index.ts"],
+            "args": ["${workspaceRoot}/src/index.ts", "-c", "test.yml", "-o", "./test-installer.exe"],
             "runtimeArgs": ["-r", "ts-node/register"],
-            "cwd": "${workspaceRoot}",
+            "cwd": "${workspaceRoot}/test",
             "protocol": "inspector",
             "internalConsoleOptions": "openOnSessionStart",
-            "skipFiles": ["<node_internals>/**/*.js", "${workspaceRoot}/node_modules/lodash/**/*.js"],
+            // "skipFiles": ["<node_internals>/**/*.js", "${workspaceRoot}/node_modules/lodash/**/*.js"],
             "env": {
-                "TS_NODE_IGNORE": "false"
+                "TS_NODE_IGNORE": "false",
+                "TS_NODE_PROJECT": "${workspaceRoot}/src/tsconfig.json"
             }
         }
     ]
