@@ -1,11 +1,11 @@
-import fs from "fs-extra";
 import { exec } from "pkg";
-import { Service } from "typedi";
+import { Service, Inject } from "typedi";
+import { Environment } from "../installer/services/Environment";
 
 /**
  * Installer packager.
  *
- * Packages a custom installer.
+ * Packages a custom installer via pkg CLI.
  *
  * @export
  * @class InstallerPackager
@@ -13,15 +13,23 @@ import { Service } from "typedi";
 @Service()
 export class InstallerPackager {
     /**
-     * Packages the current custom installer configuration.
+     * Injected environment.
+     *
+     * @private
+     * @type {Environment}
+     * @memberof InstallerPackager
+     */
+    @Inject()
+    private env!: Environment;
+
+    /**
+     * Packages the current registered custom installer configuration.
      *
      * @param {string} path Path to output the packaged installer to
      * @returns {Promise<void>}
      * @memberof InstallerPackager
      */
     public async package(path: string): Promise<void> {
-        if (fs.pathExistsSync(path)) {
-            await exec([`${__dirname}/installer`, "-o", path]);
-        }
+        await exec([`${this.env.installerDirectory}/package.json`, "-t", "host", "-o", path]);
     }
 }

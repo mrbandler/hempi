@@ -11,10 +11,10 @@ import { InstallerBuilder } from "./services/InstallerBuilder";
 async function main() {
     const cli = new commander.Command();
     cli.version(pkg.version)
-        .description("Hepi - Highly Efficient Package Installer | CLI to create custom installers for windows based systems")
+        .description("Hempi - Highly Elaborate Multi-Package Installer | CLI to create custom installers for windows based systems")
         .option("-c, --config <config.yml>", "Installer configuration")
-        .option("-o, --output <installer.exe>", "Output path for the custom installer")
-        .option("-off, --offline", "Whether the installers should be downloaded for a custom offline installer")
+        .option("-o, --output <installer.exe>", "Output path for the custom installer", "./hempi.exe")
+        .option("-d, --download", "Whether the installers should be downloaded for a custom offline installer", false)
         .parse(process.argv);
 
     if (!process.argv.slice(2).length) {

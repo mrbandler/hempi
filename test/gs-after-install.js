@@ -1,1 +1,1 @@
-console.log("Greenshot after install script!");
+console.log("Hello, gs-after-install!");

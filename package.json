@@ -1,7 +1,7 @@
 {
-    "name": "hepi",
+    "name": "hempi",
     "version": "0.1.0",
-    "description": "Hepi - Highly Efficient Package Installer",
+    "description": "Hempi - Highly Elaborate Multi-Package Installer",
     "main": "index.js",
     "repository": "git@github.com:mrbandler/hepi.git",
     "author": "mrbandler <mrbandler@fivefingergames.com>",
@@ -11,6 +11,13 @@
     "bugs": {
         "url": "https://github.com/mrbandler/hepi/issues"
     },
+    "os": [
+        "win32"
+    ],
+    "cpu": [
+        "x64",
+        "x32"
+    ],
     "bin": {
         "hepi": "./bin/index.js"
     },
@@ -19,11 +26,12 @@
     ],
     "scripts": {
         "start": "node",
-        "build": "tsc --build src",
+        "build": "rimraf ./bin && tsc --build src",
         "build:start": "yarn build && yarn start",
         "build:link": "yarn build && npm link"
     },
     "dependencies": {
+        "axios": "^0.19.2",
         "chalk": "^4.1.0",
         "commander": "^5.1.0",
         "fs-extra": "^9.0.1",
@@ -53,6 +61,7 @@
         "husky": "^4.2.5",
         "lint-staged": "^10.2.11",
         "prettier": "^2.0.5",
+        "rimraf": "^3.0.2",
         "ts-node": "^8.10.2",
         "typescript": "^3.9.5"
     },

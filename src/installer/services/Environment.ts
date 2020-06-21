@@ -56,7 +56,7 @@ export class Environment {
     }
 
     /**
-     *
+     * Manifest path.
      *
      * @readonly
      * @type {string}

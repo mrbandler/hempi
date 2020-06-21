@@ -1,43 +1,75 @@
 import fs from "fs-extra";
+import path from "path";
 import yml from "yaml";
 import { Service } from "typedi";
 import { InstallerConfiguration } from "../types/configuration";
 
 /**
- * Configuration parser.
+ * Configuration ConfigurationParser.
+ *
+ * Parses the installer configuration given by a filepath.
  *
  * @export
- * @class Parser
+ * @class ConfigurationParser
  */
 @Service()
 export class ConfigurationParser {
     /**
-     * Parses the configuration by a given file path.
+     * Parses the configuration by a given filepath.
      *
-     * @param {string} path Path to the configuration file
-     * @returns {InstallerConfiguration} Parsed installed configuration
-     * @memberof Parser
+     * @param {string} filepath Path to the configuration file
+     * @returns {InstallerConfiguration} Parsed installer configuration
+     * @memberof ConfigurationParser
      */
-    public parse(path: string): InstallerConfiguration {
-        const contents = this.read(path);
-        return yml.parse(contents) as InstallerConfiguration;
+    public parse(filepath: string): InstallerConfiguration {
+        const contents = this.read(filepath);
+        let result = yml.parse(contents) as InstallerConfiguration;
+
+        return this.sanitizePaths(filepath, result);
     }
 
     /**
-     * Reads the file contents from a given path.
+     * Reads the file contents from a given filepath.
      *
      * @private
-     * @param {string} path Path to the file, to read the contents from
-     * @returns {string} Read contents
-     * @memberof Parser
+     * @param {string} filepath Path to the file, to read the contents from
+     * @returns {string} File contents
+     * @memberof ConfigurationParser
      */
-    private read(path: string): string {
-        let exists = fs.existsSync(path);
+    private read(filepath: string): string {
+        let exists = fs.existsSync(filepath);
 
         if (exists) {
-            return fs.readFileSync(path, "utf-8");
+            return fs.readFileSync(filepath, "utf-8");
         } else {
-            throw new Error(`Configuration file '${path}' could not be found`);
+            throw new Error(`Configuration file '${filepath}' could not be found`);
         }
+    }
+
+    /**
+     * Sanitizes filepath within the installer configuration.
+     *
+     * Since all filepaths are expectd to be relative to the installer configuration itself.
+     *
+     * @private
+     * @param {string} filepath Filepath of the installer configuration
+     * @param {InstallerConfiguration} configuration Installer configuration to sanitize
+     * @returns {InstallerConfiguration} Sanitized installer configuration
+     * @memberof ConfigurationConfigurationParser
+     */
+    private sanitizePaths(filepath: string, configuration: InstallerConfiguration): InstallerConfiguration {
+        if (configuration.packages) {
+            for (const name in configuration.packages) {
+                if (configuration.packages.hasOwnProperty(name)) {
+                    const pkg = configuration.packages[name];
+
+                    if (pkg.script) {
+                        pkg.script = path.join(path.dirname(filepath), pkg.script);
+                    }
+                }
+            }
+        }
+
+        return configuration;
     }
 }

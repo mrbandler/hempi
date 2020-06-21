@@ -1,5 +1,11 @@
+/**
+ * CLI options.
+ *
+ * @export
+ * @interface Options
+ */
 export interface Options {
     config: string;
     output: string;
-    offline: boolean;
+    download: boolean;
 }

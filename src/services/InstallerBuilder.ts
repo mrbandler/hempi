@@ -2,14 +2,16 @@ import { Service, Inject } from "typedi";
 import { Options } from "../types/options";
 import { ConfigurationParser } from "./ConfigurationParser";
 import { InstallerPackager } from "./InstallerPackager";
+import { InstallerConfigurator } from "./InstallerConfigurator";
 
 /**
- * Builder service.
+ * Installer builder.
  *
  * Builds the custom installer based on the given CLI options.
+ * This is also the main entry point of the CLI after the main() function in the index.ts
  *
  * @export
- * @class Builder
+ * @class InstallerBuilder
  */
 @Service()
 export class InstallerBuilder {
@@ -34,18 +36,26 @@ export class InstallerBuilder {
     private packager!: InstallerPackager;
 
     /**
+     * Injected custom installer configurator.
+     *
+     * @private
+     * @type {InstallerConfigurator}
+     * @memberof InstallerBuilder
+     */
+    @Inject()
+    private configurator!: InstallerConfigurator;
+
+    /**
      * Builds a custom installer based on the give CLI options.
      *
      * @param {Options} options CLI options
      * @returns {Promise<void>}
-     * @memberof Builder
+     * @memberof InstallerBuilder
      */
     public async build(options: Options): Promise<void> {
         const configuration = this.parser.parse(options.config);
 
-        // TODO: Read the configuration and either pre-download all installers and put them in the assets folder
-        // TODO: OR inject the data into the custom installer to download the installers on the fly.
-
-        this.packager.package(options.output);
+        await this.configurator.configure(configuration, options.download);
+        await this.packager.package(options.output);
     }
 }

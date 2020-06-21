@@ -5,6 +5,13 @@
     "main": "index.js",
     "license": "MIT",
     "private": true,
+    "os": [
+        "win32"
+    ],
+    "cpu": [
+        "x64",
+        "x32"
+    ],
     "bin": {
         "hepi": "./index.js"
     },
@@ -13,6 +20,6 @@
     ],
     "pkg": {
         "scripts": "./**/*.js",
-        "assets": ".assets/**/*"
+        "assets": "./assets/**/*"
     }
 }

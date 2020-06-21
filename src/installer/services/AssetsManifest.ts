@@ -1,104 +1,105 @@
 import fs from "fs-extra";
+import path from "path";
+import os from "os";
 import { Service } from "typedi";
 import { Artifact, AssetsManifest, Script, Arch } from "../../types/manifest";
 
 /**
+ * Asset manifest manager.
  *
+ * Manages all asset entries within the manifest.
  *
  * @export
  * @class AssetsManifest
  */
 @Service()
-export class AssetsManifestManager {
+export class AssetManifestManager {
     /**
-     *
+     * Internal manifest object.
      *
      * @private
      * @type {AssetsManifest}
-     * @memberof AssetsManifestManager
+     * @memberof AssetManifestManager
      */
     private manifest: AssetsManifest = { artifacts: [], scripts: [] };
 
     /**
+     * Loads a manifest from disk given a filepath.
      *
-     *
-     * @param {string} path
+     * @param {string} filepath Filepath of the manifest
      * @memberof AssetsManifest
      */
-    public load(path: string): void {
-        if (fs.existsSync(path)) {
-            this.manifest = fs.readJSONSync(path) as AssetsManifest;
+    public load(filepath: string): void {
+        if (fs.existsSync(path.dirname(filepath))) {
+            this.manifest = fs.readJSONSync(filepath) as AssetsManifest;
         } else {
             throw new Error("Installer manifest could not be loaded");
         }
     }
 
     /**
+     * Save the current manifest to disk
      *
-     *
-     * @param {string} path
+     * @param {string} filepath Filepath of the file to save to
      * @memberof AssetsManifest
      */
-    public save(path: string): void {
-        if (fs.pathExistsSync(path)) {
-            fs.writeJSONSync(path, this.manifest);
+    public save(filepath: string): void {
+        if (fs.pathExistsSync(path.dirname(filepath))) {
+            fs.writeJSONSync(filepath, this.manifest);
         } else {
             throw new Error("Unable to save manifest, assets registry not initilized");
         }
     }
 
     /**
+     * Returns all artifacts relevant for the executing OS architecture
      *
+     * @returns {Artifact[]} All relevant artifacts
+     * @memberof AssetManifestManager
+     */
+    public getArtifacts(): Artifact[] {
+        let result: Artifact[] = [];
+
+        if (os.arch() === Arch.x64) {
+            result = this.manifest.artifacts
+                .filter((a) => a.arch === Arch.x32)
+                .map((a) => {
+                    const x64 = this.manifest.artifacts.find((art) => art.arch === Arch.x64 && art.package === a.package);
+                    return x64 ? x64 : a;
+                });
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a post install script given a package name.
      *
-     * @param {Artifact} artifact
-     * @memberof AssetsManifestManager
+     * @param {string} pkg Package name
+     * @returns {(Script | undefined)}
+     * @memberof AssetManifestManager
+     */
+    public getScript(pkg: string): Script | undefined {
+        return this.manifest.scripts.find((s) => s.package === pkg);
+    }
+
+    /**
+     * Adds a given artifact to the manifest.
+     *
+     * @param {Artifact} artifact Artifact to add
+     * @memberof AssetManifestManager
      */
     public addArtifact(artifact: Artifact): void {
         this.manifest.artifacts.push(artifact);
     }
 
     /**
+     * Adds a post install script to the manifest.
      *
-     *
-     * @param {Script} script
-     * @memberof AssetsManifestManager
+     * @param {Script} script Script to add
+     * @memberof AssetManifestManager
      */
     public addScripts(script: Script): void {
         this.manifest.scripts.push(script);
-    }
-
-    /**
-     *
-     *
-     * @param {string} pkg
-     * @param {Arch} arch
-     * @returns {(Artifact | undefined)}
-     * @memberof AssetsManifestManager
-     */
-    public getArtifact(pkg: string, arch: Arch): Artifact | undefined {
-        let result: Artifact | undefined = undefined;
-
-        if (this.manifest) {
-            result = this.manifest.artifacts.find((a) => a.package === pkg && a.arch === arch);
-        }
-
-        return result;
-    }
-
-    /**
-     *
-     *
-     * @param {string} pkg
-     * @returns {(Script | undefined)}
-     * @memberof AssetsManifestManager
-     */
-    public getScript(pkg: string): Script | undefined {
-        let result: Script | undefined = undefined;
-
-        if (this.manifest) {
-            result = this.manifest.scripts.find((s) => s.package === pkg);
-        }
-
-        return result;
     }
 }
