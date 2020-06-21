@@ -1,5 +1,6 @@
 import "reflect-metadata";
-import * as _ from "./package.json";
+import "./package.json";
+import _ from "lodash";
 import Container from "typedi";
 import { Installer } from "./services/Installer";
 
@@ -12,6 +13,4 @@ async function main() {
 }
 
 // Calling the main entry point.
-main()
-    .then(() => console.log("Installation successfull!"))
-    .catch((error: Error) => console.error(error.message));
+main().then(_.noop).catch(_.noop);

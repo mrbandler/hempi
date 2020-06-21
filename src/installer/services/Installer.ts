@@ -1,11 +1,20 @@
+import os from "os";
+import _ from "lodash";
+import Listr from "listr";
 import { Service, Inject } from "typedi";
-import { Artifact } from "../../types/manifest";
+import { Artifact, Script } from "../../types/manifest";
 import { Environment } from "./Environment";
 import { AssetManifestManager } from "./AssetsManifest";
 import { ArtifactsDownloader } from "./ArtifactDownloader";
 import { CommandExecutor } from "./CommandExecutor";
 import { ScriptExecutor } from "./ScriptExecutor";
 import { ArtifactRemover } from "./ArtifactRemover";
+
+interface InstallerContext {
+    artifact: Artifact;
+    script?: Script;
+    didInstall: boolean;
+}
 
 /**
  * Installer.
@@ -84,12 +93,28 @@ export class Installer {
      * @memberof Installer
      */
     public async install(): Promise<void> {
-        this.manifest.load(this.env.assetsManifestPath);
+        const loadingManifestTask: Listr.ListrTask = {
+            title: "Loading manifest",
+            task: () => {
+                this.manifest.load(this.env.assetsManifestPath);
+            },
+        };
 
-        const artifacts = this.manifest.getArtifacts();
-        for (const artifact of artifacts) {
-            await this.installArtifact(artifact);
-        }
+        const installingTask: Listr.ListrTask = {
+            title: "Installing packages",
+            task: () => {
+                const artifacts = this.manifest.getArtifacts();
+                const artifactInstallTasks = artifacts.map((a) => this.installArtifact(a));
+
+                return new Listr(artifactInstallTasks, {
+                    concurrent: false,
+                    exitOnError: false,
+                });
+            },
+        };
+
+        const tasks = new Listr([loadingManifestTask, installingTask]);
+        await tasks.run().catch(_.noop);
     }
 
     /**
@@ -100,21 +125,73 @@ export class Installer {
      * @returns {Promise<void>}
      * @memberof Installer
      */
-    private async installArtifact(artifact: Artifact): Promise<void> {
-        artifact = await this.downloadArtifact(artifact);
+    private installArtifact(artifact: Artifact): Listr.ListrTask<InstallerContext> {
+        const downloadTask: Listr.ListrTask<InstallerContext> = {
+            title: "Downloading artifact",
+            enabled: (ctx) => {
+                ctx.artifact = artifact;
+                ctx.didInstall = true;
+                ctx.script = this.manifest.getScript(ctx.artifact.package);
 
-        try {
-            await this.commandExecuter.exec(artifact);
-        } catch (error) {
-            console.error(error.message);
-        }
+                return !ctx.artifact.path;
+            },
+            task: async (ctx) => {
+                ctx.artifact = await this.downloadArtifact(ctx.artifact);
+            },
+        };
 
-        const script = this.manifest.getScript(artifact.package);
-        if (script) {
-            await this.scriptExecuter.exec(script);
-        }
+        const installTask: Listr.ListrTask<InstallerContext> = {
+            title: "Executing command",
+            task: async (ctx, task) => {
+                try {
+                    task.output = ctx.artifact.cmd ? ctx.artifact.cmd : ctx.artifact.path ? ctx.artifact.path : "";
+                    await this.commandExecuter.exec(ctx.artifact);
+                } catch (error) {
+                    ctx.didInstall = false;
 
-        this.remover.remove(artifact);
+                    throw error;
+                }
+            },
+        };
+
+        const postScriptTask: Listr.ListrTask<InstallerContext> = {
+            title: "Running post install script",
+            skip: (ctx) => {
+                if (ctx.didInstall) {
+                    return ctx.script != undefined ? false : "No post install script defined";
+                } else {
+                    return "Command execution failed";
+                }
+            },
+            task: async (ctx, tasks) => {
+                return new Promise<void>((resolve, _) => {
+                    if (ctx.script) {
+                        tasks.output = this.scriptExecuter.exec(ctx.script);
+                        setTimeout(resolve, 1000);
+                    }
+                });
+            },
+        };
+
+        const removingArtifactTask: Listr.ListrTask<InstallerContext> = {
+            title: "Removing downloaded artifact",
+            enabled: (ctx) => (ctx.artifact.path ? ctx.artifact.path.includes(os.tmpdir()) : false),
+            task: (ctx) =>
+                new Promise<void>((resolve, _) => {
+                    this.remover.remove(ctx.artifact);
+                    setTimeout(resolve, 500);
+                }),
+        };
+
+        return {
+            title: `Installing ${artifact.package}`,
+            task: () => {
+                return new Listr<InstallerContext>([downloadTask, installTask, postScriptTask, removingArtifactTask], {
+                    concurrent: false,
+                    exitOnError: false,
+                });
+            },
+        };
     }
 
     /**

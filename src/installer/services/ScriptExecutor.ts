@@ -7,7 +7,7 @@ import { Script } from "../../types/manifest";
 import { Environment } from "./Environment";
 
 /**
- *
+ * Script executor.
  *
  * @export
  * @class ScriptExecutor
@@ -15,7 +15,7 @@ import { Environment } from "./Environment";
 @Service()
 export class ScriptExecutor {
     /**
-     *
+     * Injected environment.
      *
      * @private
      * @type {Environment}
@@ -25,30 +25,28 @@ export class ScriptExecutor {
     private env!: Environment;
 
     /**
+     * Executes a given post install script.
      *
-     *
-     * @param {Script} script
-     * @returns {Promise<void>}
+     * @param {Script} script Script to execute
+     * @returns {*}
      * @memberof ScriptExecutor
      */
-    public async exec(script: Script): Promise<void> {
+    public exec(script: Script): any {
         const filepath = path.join(this.env.assetsDirectory, script.path);
         const source = fs.readFileSync(filepath, "utf-8");
 
-        vm.runInNewContext(source, this.createVmSandbox());
+        return vm.runInNewContext(source, this.createSandboxEnv());
     }
 
     /**
-     *
+     * Creates the scripts sandbox environment.
      *
      * @private
      * @returns {*}
      * @memberof ScriptExecutor
      */
-    private createVmSandbox(): any {
+    private createSandboxEnv(): any {
         return {
-            require,
-            console,
             os,
             path,
             fs,

@@ -1,8 +1,13 @@
 import _ from "lodash";
+import Listr from "listr";
 import { Service, Inject } from "typedi";
 import { InstallerConfiguration, Packages, Package } from "../types/configuration";
 import { AssetRegistry } from "./AssetsRegistry";
 import { Artifact, Script, Arch } from "../types/manifest";
+
+interface ConfiguratorContext {
+    success: boolean;
+}
 
 /**
  * Installer configurator.
@@ -32,9 +37,32 @@ export class InstallerConfigurator {
      * @returns {Promise<void>}
      * @memberof InstallerConfigurator
      */
-    public async configure(configuration: InstallerConfiguration, download?: boolean): Promise<void> {
+    public async configure(configuration: InstallerConfiguration, download?: boolean): Promise<boolean> {
         if (configuration.packages) {
-            await this.createRegistry(configuration.packages, download);
+            const initRegistryTask: Listr.ListrTask<ConfiguratorContext> = {
+                title: "Initialize package registry",
+                task: () => {
+                    this.registry.initAssetsDirectory();
+
+                    return new Listr(this.registerPackages(configuration.packages, download), {
+                        exitOnError: true,
+                        concurrent: true,
+                    });
+                },
+            };
+
+            const saveManifestTask: Listr.ListrTask<ConfiguratorContext> = {
+                title: "Persisting registry manifest",
+                enabled: (ctx) => ctx.success === true,
+                task: () => {
+                    this.registry.saveManifest();
+                },
+            };
+
+            const tasks = new Listr([initRegistryTask, saveManifestTask]);
+            const context = await tasks.run();
+
+            return context.success;
         } else {
             throw new Error("Unable to configure custom installer, no packages defined");
         }
@@ -49,35 +77,39 @@ export class InstallerConfigurator {
      * @returns {Promise<void>}
      * @memberof InstallerConfigurator
      */
-    private async createRegistry(packages: Packages, download?: boolean): Promise<void> {
-        this.registry.initAssetsDirectory();
+    private registerPackages(packages: Packages, download?: boolean): Listr.ListrTask<ConfiguratorContext>[] {
+        let result: Listr.ListrTask[] = [];
 
-        let success = false;
         for (const name in packages) {
             if (packages.hasOwnProperty(name)) {
                 const pkg = packages[name] as Package;
 
-                if (this.isPackageValid(pkg)) {
-                    const artifacts = this.createArtifacts(name, pkg);
-                    for (const artifact of artifacts) {
-                        await this.registry.addArtifact(artifact, download);
-                    }
+                const registerPackageTask: Listr.ListrTask<ConfiguratorContext> = {
+                    title: `Register ${name}`,
+                    task: async (ctx) => {
+                        if (this.isPackageValid(pkg)) {
+                            const artifacts = this.createArtifacts(name, pkg);
+                            for (const artifact of artifacts) {
+                                await this.registry.addArtifact(artifact, download);
+                            }
 
-                    const script = this.createScript(name, pkg);
-                    if (script) {
-                        this.registry.addScript(script);
-                    }
+                            const script = this.createScript(name, pkg);
+                            if (script) {
+                                this.registry.addScript(script);
+                            }
 
-                    success = true;
-                } else {
-                    //TODO: Message to the user.
-                }
+                            ctx.success = true;
+                        } else {
+                            //TODO: Message to the user.
+                        }
+                    },
+                };
+
+                result.push(registerPackageTask);
             }
         }
 
-        if (success) {
-            this.registry.saveManifest();
-        }
+        return result;
     }
 
     /**

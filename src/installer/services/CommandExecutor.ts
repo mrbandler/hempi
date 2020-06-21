@@ -46,7 +46,7 @@ export class CommandExecutor {
     /**
      * Creates the command basesed on the given artifact.
      *
-     * A artifact does not need to havea property command, it doesn't the command is just the artifact itself.
+     * A artifact does not need to have a command property, if it doesn't the command is just the artifact itself.
      *
      * @private
      * @param {Artifact} artifact Artifact to create the command for

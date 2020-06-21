@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import _ from "lodash";
 import pkg from "../package.json";
 import commander from "commander";
 import Container from "typedi";
@@ -28,6 +29,4 @@ async function main() {
 }
 
 // Calling the main entry point.
-main()
-    .then(() => console.log("Build successfull!"))
-    .catch((error: Error) => console.error(error.message));
+main().then(_.noop).catch(_.noop);

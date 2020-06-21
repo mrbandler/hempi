@@ -1,8 +1,14 @@
 import fs from "fs-extra";
 import path from "path";
 import yml from "yaml";
+import Listr from "listr";
 import { Service } from "typedi";
 import { InstallerConfiguration } from "../types/configuration";
+
+interface ParserContext {
+    contents: string;
+    configuration: InstallerConfiguration;
+}
 
 /**
  * Configuration ConfigurationParser.
@@ -21,11 +27,30 @@ export class ConfigurationParser {
      * @returns {InstallerConfiguration} Parsed installer configuration
      * @memberof ConfigurationParser
      */
-    public parse(filepath: string): InstallerConfiguration {
-        const contents = this.read(filepath);
-        let result = yml.parse(contents) as InstallerConfiguration;
+    public async parse(filepath: string): Promise<InstallerConfiguration> {
+        const readTask: Listr.ListrTask<ParserContext> = {
+            title: "Reading installer configuration",
+            task: (ctx) => {
+                ctx.contents = this.read(filepath);
+            },
+        };
 
-        return this.sanitizePaths(filepath, result);
+        const parseTask: Listr.ListrTask<ParserContext> = {
+            title: "Parsing installer configuration",
+            task: (ctx) => {
+                ctx.configuration = yml.parse(ctx.contents) as InstallerConfiguration;
+                ctx.configuration = this.sanitizePaths(filepath, ctx.configuration);
+            },
+        };
+
+        const tasks = new Listr([readTask, parseTask]);
+        const context = await tasks.run();
+        return context.configuration;
+
+        // const contents = this.read(filepath);
+        // let result = yml.parse(contents) as InstallerConfiguration;
+
+        // return this.sanitizePaths(filepath, result);
     }
 
     /**

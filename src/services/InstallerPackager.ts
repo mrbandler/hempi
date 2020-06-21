@@ -1,4 +1,5 @@
-import { exec } from "pkg";
+import Listr from "listr";
+import { exec } from "child_process";
 import { Service, Inject } from "typedi";
 import { Environment } from "../installer/services/Environment";
 
@@ -30,6 +31,20 @@ export class InstallerPackager {
      * @memberof InstallerPackager
      */
     public async package(path: string): Promise<void> {
-        await exec([`${this.env.installerDirectory}/package.json`, "-t", "host", "-o", path]);
+        await new Listr([
+            {
+                title: "Package installer",
+                task: async () =>
+                    new Promise<void>((resolve, reject) => {
+                        exec(`node node_modules/pkg/lib-es5/bin.js ${this.env.installerDirectory}/package.json -t host -o ${path}`, (error) => {
+                            if (error) {
+                                reject(error);
+                            } else {
+                                resolve();
+                            }
+                        });
+                    }),
+            },
+        ]).run();
     }
 }

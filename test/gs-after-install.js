@@ -1,1 +1,1 @@
-console.log("Hello, gs-after-install!");
+os.arch();

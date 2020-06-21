@@ -53,9 +53,11 @@ export class InstallerBuilder {
      * @memberof InstallerBuilder
      */
     public async build(options: Options): Promise<void> {
-        const configuration = this.parser.parse(options.config);
+        const configuration = await this.parser.parse(options.config);
 
-        await this.configurator.configure(configuration, options.download);
-        await this.packager.package(options.output);
+        const configured = await this.configurator.configure(configuration, options.download);
+        if (configured) {
+            await this.packager.package(options.output);
+        }
     }
 }

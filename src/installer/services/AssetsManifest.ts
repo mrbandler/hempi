@@ -67,6 +67,8 @@ export class AssetManifestManager {
                     const x64 = this.manifest.artifacts.find((art) => art.arch === Arch.x64 && art.package === a.package);
                     return x64 ? x64 : a;
                 });
+        } else {
+            result = this.manifest.artifacts.filter((a) => a.arch === Arch.x32);
         }
 
         return result;
