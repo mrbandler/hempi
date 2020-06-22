@@ -1,6 +1,6 @@
 {
     "name": "hempi",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Hempi - Highly Elaborate Multi-Package Installer",
     "repository": "git@github.com:mrbandler/hempi.git",
     "author": "mrbandler <mrbandler@fivefingergames.com>",
