@@ -3,7 +3,7 @@ import _ from "lodash";
 import Listr from "listr";
 import Progress from "progress-string";
 import { Service, Inject } from "typedi";
-import { Artifact, Script } from "../../types/manifest";
+import { Artifact, Script, Arch } from "../../types/manifest";
 import { Environment } from "./Environment";
 import { AssetManifestManager } from "./AssetsManifest";
 import { ArtifactsDownloader } from "./ArtifactDownloader";
@@ -158,7 +158,7 @@ export class Installer {
                 let progress = new Progress({ width: 20, total: 100 });
                 ctx.artifact = await this.downloadArtifact(ctx.artifact, (percent) => {
                     total = total + percent;
-                    task.output = `Downloading [${progress(total)}] ${Math.round(total)}%`;
+                    task.output = `Downloading (${ctx.artifact.arch === Arch.x32 ? "x32" : "x64"}) [${progress(total)}] ${Math.round(total)}%`;
                 });
             },
         };

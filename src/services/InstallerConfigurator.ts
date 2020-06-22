@@ -52,7 +52,7 @@ export class InstallerConfigurator {
 
                     return new Listr(this.registerPackages(configuration.packages, download), {
                         exitOnError: true,
-                        concurrent: true,
+                        concurrent: false,
                     });
                 },
             };
@@ -100,7 +100,7 @@ export class InstallerConfigurator {
                                 let progress = new Progress({ width: 20, total: 100 });
                                 await this.registry.addArtifact(artifact, download, (percent) => {
                                     total = total + percent;
-                                    task.output = `Downloading [${progress(total)}] ${Math.round(total)}%`;
+                                    task.output = `Downloading (${artifact.arch === Arch.x32 ? "x32" : "x64"}) [${progress(total)}] ${Math.round(total)}%`;
                                 });
                             }
 

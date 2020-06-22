@@ -1,11 +1,71 @@
 ---
 packages:
-    Win10Debloat:
+    Chrome:
         url:
-            x32: https://raw.githubusercontent.com/Sycnex/Windows10Debloater/master/Windows10SysPrepDebloater.ps1
-        cmd: "powershell.exe {file} -SysPrep -Debloat"
-    Greenshot:
+            x32: https://dl.google.com/tag/s/appguid%3D%7B8A69D345-D564-463C-AFF1-A69D9E530F96%7D%26iid%3D%7B6FAA4319-5E39-383B-3324-0655AC1937D5%7D%26lang%3Den%26browser%3D4%26usagestats%3D1%26appname%3DGoogle%2520Chrome%26needsadmin%3Dprefers%26ap%3Dx64-stable-statsdef_1%26installdataindex%3Dempty/chrome/install/ChromeStandaloneSetup.exe
+            x64: https://dl.google.com/tag/s/appguid%3D%7B8A69D345-D564-463C-AFF1-A69D9E530F96%7D%26iid%3D%7B6FAA4319-5E39-383B-3324-0655AC1937D5%7D%26lang%3Den%26browser%3D4%26usagestats%3D1%26appname%3DGoogle%2520Chrome%26needsadmin%3Dprefers%26ap%3Dx64-stable-statsdef_1%26installdataindex%3Dempty/chrome/install/ChromeStandaloneSetup64.exe
+        cmd: "{file} /silent /install"
+    Discord:
         url:
-            x32: https://github.com/greenshot/greenshot/releases/download/Greenshot-RELEASE-1.2.10.6/Greenshot-INSTALLER-1.2.10.6-RELEASE.exe
-        cmd: "{file} /VERYSILENT /SUPPRESSMESSAGEBOXES /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /NORESTART"
-        script: ./gs-after-install.js
+            x32: https://dl.discordapp.net/apps/win/0.0.306/DiscordSetup.exe
+        cmd: "{file}"
+    Slack:
+        url:
+            x32: https://downloads.slack-edge.com/releases/windows/4.6.0/prod/ia32/SlackSetup.exe
+            x64: https://downloads.slack-edge.com/releases/windows/4.6.0/prod/x64/SlackSetup.exe
+        cmd: "{file}"
+    7-Zip:
+        url:
+            x32: https://www.7-zip.org/a/7z1900.exe
+            x64: https://www.7-zip.org/a/7z1900-x64.exe
+        cmd: "{file}"
+    PuTTY:
+        url:
+            x32: https://the.earth.li/~sgtatham/putty/latest/w32/putty-0.73-installer.msi
+            x64: https://the.earth.li/~sgtatham/putty/latest/w64/putty-64bit-0.73-installer.msi
+        cmd: "{file}"
+    Spotify:
+        url:
+            x32: https://download.scdn.co/SpotifySetup.exe
+        cmd: "{file}"
+    .NET Core (SDK):
+        url:
+            x32: https://download.visualstudio.microsoft.com/download/pr/c5f311ca-3ed2-4249-8e09-51ff15250836/dfbee818fd022129a60f290187215b2f/aspnetcore-runtime-3.1.5-win-x86.exe
+            x64: https://download.visualstudio.microsoft.com/download/pr/6818f1f7-75de-43e5-9202-2b328ca127f7/039edc4bab29e5af63ed618e59f82fad/aspnetcore-runtime-3.1.5-win-x64.exe
+        cmd: "{file}"
+    Python 3.8:
+        url:
+            x32: https://www.python.org/ftp/python/3.8.3/python-3.8.3.exe
+            x64: https://www.python.org/ftp/python/3.8.3/python-3.8.3-amd64.exe
+        cmd: "{file}"
+    nodejs:
+        url:
+            x32: https://nodejs.org/dist/v12.18.1/node-v12.18.1-x86.msi
+            x64: https://nodejs.org/dist/v12.18.1/node-v12.18.1-x64.msi
+        cmd: "{file}"
+    Blender:
+        url:
+            x32: https://ftp.halifax.rwth-aachen.de/blender/release/Blender2.83/blender-2.83.0-windows64.msi
+        cmd: "{file}"
+    OBS:
+        url:
+            x32: https://cdn-fastly.obsproject.com/downloads/OBS-Studio-25.0.8-Full-Installer-x86.exe
+            x64: https://cdn-fastly.obsproject.com/downloads/OBS-Studio-25.0.8-Full-Installer-x64.exe
+        cmd: "{file}"
+    Visual Studio Code:
+        url:
+            x32: https://az764295.vo.msecnd.net/stable/cd9ea6488829f560dc949a8b2fb789f3cdc05f5d/VSCodeSetup-ia32-1.46.1.exe
+            x64: https://az764295.vo.msecnd.net/stable/cd9ea6488829f560dc949a8b2fb789f3cdc05f5d/VSCodeSetup-x64-1.46.1.exe
+        cmd: "{file}"
+    Steam:
+        url:
+            x32: https://steamcdn-a.akamaihd.net/client/installer/SteamSetup.exe
+        cmd: "{file}"
+    Unity Hub:
+        url:
+            x32: https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.exe
+        cmd: "{file}"
+    Epic Games Launcher:
+        url:
+            x32: https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi
+        cmd: "{file}"
