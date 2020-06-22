@@ -58,7 +58,7 @@ export class ArtifactsDownloader {
 
         return new Promise<string>((resolve, reject) => {
             const basepath = toRegistry ? this.env.assetsArtifactsDirectory : os.tmpdir();
-            const filepath = path.join(basepath, `${filename}.exe`);
+            const filepath = path.join(basepath, `${filename}.${path.extname(url)}`);
             const writer = fs.createWriteStream(filepath);
 
             response.data.pipe(writer);
