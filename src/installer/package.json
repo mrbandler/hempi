@@ -1,5 +1,5 @@
 {
-    "name": "hep-installer",
+    "name": "hemp-installer",
     "version": "1.0.0",
     "description": "hep-installer",
     "main": "index.js",
@@ -13,7 +13,7 @@
         "x32"
     ],
     "bin": {
-        "hepi": "./index.js"
+        "hemp-installer": "./index.js"
     },
     "files": [
         "assets"

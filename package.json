@@ -1,14 +1,14 @@
 {
     "name": "hempi",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "description": "Hempi - Highly Elaborate Multi-Package Installer",
-    "repository": "git@github.com:mrbandler/hepi.git",
+    "repository": "git@github.com:mrbandler/hempi.git",
     "author": "mrbandler <mrbandler@fivefingergames.com>",
     "license": "MIT",
     "private": false,
     "readme": "README.md",
     "bugs": {
-        "url": "https://github.com/mrbandler/hepi/issues"
+        "url": "https://github.com/mrbandler/hempi/issues"
     },
     "os": [
         "win32"

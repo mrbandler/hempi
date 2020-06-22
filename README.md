@@ -1,3 +1,1 @@
-# hepi
-
-Hepi - Highly Efficient Package Installer
+# Hempi - Highly Efficient Package Installer
