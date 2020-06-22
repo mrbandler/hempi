@@ -32,6 +32,10 @@ export class ArtifactExtractor {
             const temp = path.join(os.tmpdir(), path.basename(artifact.path));
             artifact.path = temp;
 
+            if (fs.existsSync(temp)) {
+                fs.unlinkSync(temp);
+            }
+
             const reader = fs.createReadStream(snapshot);
             const writer = fs.createWriteStream(temp);
 

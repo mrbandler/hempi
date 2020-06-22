@@ -21,6 +21,7 @@ import { ProgressCallback } from "../../types/progress";
 interface InstallerContext {
     artifact: Artifact;
     script?: Script;
+    downloaded: boolean;
     didInstall: boolean;
 }
 
@@ -148,8 +149,9 @@ export class Installer {
             title: "Downloading artifact",
             enabled: (ctx) => {
                 ctx.artifact = artifact;
-                ctx.didInstall = false;
                 ctx.script = this.manifest.getScript(ctx.artifact.package);
+                ctx.didInstall = false;
+                ctx.downloaded = false;
 
                 return !ctx.artifact.path;
             },
@@ -160,13 +162,15 @@ export class Installer {
                     total = total + percent;
                     task.output = `Downloading (${ctx.artifact.arch === Arch.x32 ? "x32" : "x64"}) [${progress(total)}] ${Math.round(total)}%`;
                 });
+
+                ctx.downloaded = true;
             },
         };
 
         const extractTask: Listr.ListrTask<InstallerContext> = {
             title: "Extracting artifact",
             enabled: (ctx) => {
-                return ctx.artifact.path ? true : false;
+                return !ctx.downloaded && ctx.artifact.path ? true : false;
             },
             task: async (ctx, task) => {
                 let total = 0;
@@ -222,6 +226,9 @@ export class Installer {
                     setTimeout(resolve, 500);
                 }),
         };
+
+        if (removingArtifactTask) {
+        }
 
         return {
             title: `Installing ${artifact.package}`,

@@ -1,5 +1,4 @@
 import fs from "fs-extra";
-import os from "os";
 import { Service } from "typedi";
 import { Artifact } from "../../types/manifest";
 
@@ -18,7 +17,7 @@ export class ArtifactRemover {
      * @memberof ArtifactRemover
      */
     public remove(artifact: Artifact): void {
-        if (artifact.path && artifact.path.includes(os.tmpdir())) {
+        if (artifact.path && fs.existsSync(artifact.path)) {
             fs.unlinkSync(artifact.path);
         }
     }

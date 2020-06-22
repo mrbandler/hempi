@@ -3,7 +3,6 @@ import fs from "fs-extra";
 import path from "path";
 import https from "https";
 import axios from "axios";
-import mime from "mime-types";
 import { Service, Inject } from "typedi";
 import { Environment } from "./Environment";
 import { ProgressCallback } from "../../types/progress";
@@ -36,6 +35,14 @@ export class ArtifactsDownloader {
      * @memberof ArtifactsDownloader
      */
     public async download(filename: string, url: string, toRegistry?: boolean, progress?: ProgressCallback): Promise<string> {
+        const basepath = toRegistry ? this.env.assetsArtifactsDirectory : os.tmpdir();
+        const ext = this.getFileExtension(url);
+        const filepath = path.join(basepath, `${filename}${ext}`);
+
+        if (fs.existsSync(filepath)) {
+            fs.unlinkSync(filepath);
+        }
+
         const clientConfig = this.env.disableStrictSSL
             ? {
                   httpsAgent: new https.Agent({
@@ -49,6 +56,9 @@ export class ArtifactsDownloader {
             responseType: "stream",
         });
 
+        const writer = fs.createWriteStream(filepath);
+        response.data.pipe(writer);
+
         if (progress) {
             const total = parseInt(response.headers["content-length"]);
             response.data.on("data", (chunk: Buffer) => {
@@ -58,12 +68,6 @@ export class ArtifactsDownloader {
         }
 
         return new Promise<string>((resolve, reject) => {
-            const basepath = toRegistry ? this.env.assetsArtifactsDirectory : os.tmpdir();
-            const ext = this.getFileExtension(url, response.headers["content-type"]);
-            const filepath = path.join(basepath, `${filename}${ext}`);
-            const writer = fs.createWriteStream(filepath);
-
-            response.data.pipe(writer);
             writer.on("error", (error) => reject(error));
             writer.on("close", () => {
                 resolve(filepath);
@@ -80,14 +84,12 @@ export class ArtifactsDownloader {
      * @returns {string} File extension
      * @memberof ArtifactsDownloader
      */
-    private getFileExtension(url: string, contentType: string): string {
+    private getFileExtension(url: string): string {
         let result = ".exe";
 
         const ext = path.extname(url);
         if (ext !== "") {
             result = ext;
-        } else if (contentType && mime.extension(contentType)) {
-            result = ("." + mime.extension(contentType)) as string;
         }
 
         return result;
