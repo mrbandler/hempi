@@ -7,7 +7,7 @@ on:
 
 jobs:
     build:
-        runs-on: ubuntu-latest
+        runs-on: windows-latest
         steps:
             - name: Clone repo
               uses: actions/checkout@v2
@@ -21,7 +21,7 @@ jobs:
             - name: Download cache
               uses: actions/cache@v2.0.0
               with:
-                  key: hepi-cache
+                  key: hempi-cache
                   path: node_modules/*
 
             - name: Install and build
@@ -32,12 +32,12 @@ jobs:
             - name: Upload a build artifact
               uses: actions/upload-artifact@v2
               with:
-                  name: hepi-artifacts
+                  name: hempi-artifacts
                   path: bin/*
 
     publish:
         needs: build
-        runs-on: ubuntu-latest
+        runs-on: windows-latest
         steps:
             - name: Clone repo
               uses: actions/checkout@v2
@@ -45,7 +45,7 @@ jobs:
             - name: Download build artifacts
               uses: actions/download-artifact@v2
               with:
-                  name: hepi-artifacts
+                  name: hempi-artifacts
                   path: bin/*
 
             - name: Setup node environment

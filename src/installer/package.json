@@ -1,15 +1,25 @@
 {
-    "name": "hep-installer",
+    "name": "hemp-installer",
     "version": "1.0.0",
     "description": "hep-installer",
     "main": "index.js",
     "license": "MIT",
     "private": true,
+    "os": [
+        "win32"
+    ],
+    "cpu": [
+        "x64",
+        "x32"
+    ],
     "bin": {
-        "hepi": "./index.js"
+        "hemp-installer": "./index.js"
     },
+    "files": [
+        "assets"
+    ],
     "pkg": {
         "scripts": "./**/*.js",
-        "assets": ".assets/**/*"
+        "assets": "./assets/**/*"
     }
 }
