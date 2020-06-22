@@ -112,27 +112,30 @@ export class Installer {
      * @memberof Installer
      */
     public async install(): Promise<void> {
-        const loadingManifestTask: Listr.ListrTask = {
-            title: "Loading manifest",
-            task: () => {
-                this.manifest.load(this.env.assetsManifestPath);
-            },
-        };
+        // const loadingManifestTask: Listr.ListrTask = {
+        //     title: "Loading manifest",
+        //     task: () => {
+        this.manifest.load(this.env.assetsManifestPath);
+        //     },
+        // };
 
-        const installingTask: Listr.ListrTask = {
-            title: "Installing packages",
-            task: () => {
-                const artifacts = this.manifest.getArtifacts();
-                const artifactInstallTasks = artifacts.map((a) => this.installArtifact(a));
+        // const installingTask: Listr.ListrTask = {
+        //     title: "Installing packages",
+        //     task: () => {
+        //         const artifacts = this.manifest.getArtifacts();
+        //         const artifactInstallTasks = artifacts.map((a) => this.installArtifact(a));
 
-                return new Listr(artifactInstallTasks, {
-                    concurrent: false,
-                    exitOnError: false,
-                });
-            },
-        };
+        //         return new Listr(artifactInstallTasks, {
+        //             concurrent: false,
+        //             exitOnError: false,
+        //         });
+        //     },
+        // };
 
-        const tasks = new Listr([loadingManifestTask, installingTask]);
+        const artifacts = this.manifest.getArtifacts();
+        const artifactInstallTasks = artifacts.map((a) => this.installArtifact(a));
+
+        const tasks = new Listr(artifactInstallTasks);
         await tasks.run().catch(_.noop);
     }
 
@@ -226,9 +229,6 @@ export class Installer {
                     setTimeout(resolve, 500);
                 }),
         };
-
-        if (removingArtifactTask) {
-        }
 
         return {
             title: `Installing ${artifact.package}`,
