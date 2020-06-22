@@ -5,6 +5,7 @@ import { Environment } from "../installer/services/Environment";
 import { Artifact, Script } from "../types/manifest";
 import { AssetManifestManager } from "../installer/services/AssetsManifest";
 import { ArtifactsDownloader } from "../installer/services/ArtifactDownloader";
+import { ProgressCallback } from "../types/progress";
 
 /**
  * Asset registry.
@@ -81,9 +82,10 @@ export class AssetRegistry {
      * @returns {Promise<void>}
      * @memberof AssetRegistry
      */
-    public async addArtifact(artifact: Artifact, download?: boolean): Promise<void> {
+    public async addArtifact(artifact: Artifact, download?: boolean, progress?: ProgressCallback): Promise<void> {
         if (download) {
-            artifact.path = await this.downloader.download(`${artifact.package}-${artifact.arch}`, artifact.url, download);
+            artifact.path = await this.downloader.download(`${artifact.package}-${artifact.arch}`, artifact.url, download, progress);
+            artifact.path = artifact.path.replace(path.normalize(this.env.assetsDirectory), ".");
         }
 
         this.manifest.addArtifact(artifact);
@@ -97,10 +99,10 @@ export class AssetRegistry {
      */
     public addScript(script: Script): void {
         if (fs.existsSync(script.path)) {
-            const filename = `${this.env.assetsScriptsDirectory}/${path.basename(script.path)}`;
+            const filename = path.join(this.env.assetsScriptsDirectory, path.basename(script.path));
             fs.copyFileSync(script.path, filename);
 
-            script.path = filename.replace(this.env.assetsDirectory, ".");
+            script.path = filename.replace(path.normalize(this.env.assetsDirectory), ".");
             this.manifest.addScripts(script);
         }
     }

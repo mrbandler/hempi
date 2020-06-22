@@ -1,6 +1,7 @@
 import os from "os";
 import _ from "lodash";
 import Listr from "listr";
+import Progress from "progress-string";
 import { Service, Inject } from "typedi";
 import { Artifact, Script } from "../../types/manifest";
 import { Environment } from "./Environment";
@@ -9,7 +10,14 @@ import { ArtifactsDownloader } from "./ArtifactDownloader";
 import { CommandExecutor } from "./CommandExecutor";
 import { ScriptExecutor } from "./ScriptExecutor";
 import { ArtifactRemover } from "./ArtifactRemover";
+import { ArtifactExtractor } from "./ArtifactExtractor";
+import { ProgressCallback } from "../../types/progress";
 
+/**
+ * Installer context, to be passed in the installation task chain.
+ *
+ * @interface InstallerContext
+ */
 interface InstallerContext {
     artifact: Artifact;
     script?: Script;
@@ -55,6 +63,16 @@ export class Installer {
      */
     @Inject()
     private downloader!: ArtifactsDownloader;
+
+    /**
+     * Injected artifacts extractor.
+     *
+     * @private
+     * @type {ArtifactExtractor}
+     * @memberof Installer
+     */
+    @Inject()
+    private extractor!: ArtifactExtractor;
 
     /**
      * Injected command executer.
@@ -130,13 +148,33 @@ export class Installer {
             title: "Downloading artifact",
             enabled: (ctx) => {
                 ctx.artifact = artifact;
-                ctx.didInstall = true;
+                ctx.didInstall = false;
                 ctx.script = this.manifest.getScript(ctx.artifact.package);
 
                 return !ctx.artifact.path;
             },
-            task: async (ctx) => {
-                ctx.artifact = await this.downloadArtifact(ctx.artifact);
+            task: async (ctx, task) => {
+                let total = 0;
+                let progress = new Progress({ width: 20, total: 100 });
+                ctx.artifact = await this.downloadArtifact(ctx.artifact, (percent) => {
+                    total = total + percent;
+                    task.output = `Downloading [${progress(total)}] ${Math.round(total)}%`;
+                });
+            },
+        };
+
+        const extractTask: Listr.ListrTask<InstallerContext> = {
+            title: "Extracting artifact",
+            enabled: (ctx) => {
+                return ctx.artifact.path ? true : false;
+            },
+            task: async (ctx, task) => {
+                let total = 0;
+                let progress = new Progress({ width: 20, total: 100 });
+                ctx.artifact = await this.extractor.extract(ctx.artifact, (percent) => {
+                    total = total + percent;
+                    task.output = `Extracting [${progress(total)}] ${Math.round(total)}%`;
+                });
             },
         };
 
@@ -144,9 +182,12 @@ export class Installer {
             title: "Executing command",
             task: async (ctx, task) => {
                 try {
-                    task.output = ctx.artifact.cmd ? ctx.artifact.cmd : ctx.artifact.path ? ctx.artifact.path : "";
+                    task.output = this.commandExecuter.getCommand(ctx.artifact);
                     await this.commandExecuter.exec(ctx.artifact);
+
+                    ctx.didInstall = true;
                 } catch (error) {
+                    console.log("Command failed!");
                     ctx.didInstall = false;
 
                     throw error;
@@ -174,7 +215,7 @@ export class Installer {
         };
 
         const removingArtifactTask: Listr.ListrTask<InstallerContext> = {
-            title: "Removing downloaded artifact",
+            title: "Removing artifact",
             enabled: (ctx) => (ctx.artifact.path ? ctx.artifact.path.includes(os.tmpdir()) : false),
             task: (ctx) =>
                 new Promise<void>((resolve, _) => {
@@ -186,7 +227,7 @@ export class Installer {
         return {
             title: `Installing ${artifact.package}`,
             task: () => {
-                return new Listr<InstallerContext>([downloadTask, installTask, postScriptTask, removingArtifactTask], {
+                return new Listr<InstallerContext>([downloadTask, extractTask, installTask, postScriptTask, removingArtifactTask], {
                     concurrent: false,
                     exitOnError: false,
                 });
@@ -202,9 +243,9 @@ export class Installer {
      * @returns {Promise<Artifact>} Downloaded artifact
      * @memberof Installer
      */
-    private async downloadArtifact(artifact: Artifact): Promise<Artifact> {
+    private async downloadArtifact(artifact: Artifact, progress?: ProgressCallback): Promise<Artifact> {
         if (!artifact.path) {
-            artifact.path = await this.downloader.download(`${artifact.package}-${artifact.arch}`, artifact.url);
+            artifact.path = await this.downloader.download(`${artifact.package}-${artifact.arch}`, artifact.url, false, progress);
         }
 
         return artifact;

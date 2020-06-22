@@ -5,6 +5,11 @@ import Listr from "listr";
 import { Service } from "typedi";
 import { InstallerConfiguration } from "../types/configuration";
 
+/**
+ * Parser context, to be passed along the parsing task chain.
+ *
+ * @interface ParserContext
+ */
 interface ParserContext {
     contents: string;
     configuration: InstallerConfiguration;

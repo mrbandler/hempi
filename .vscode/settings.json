@@ -5,6 +5,7 @@
     "files.exclude": {
         "**/node_modules": true
     },
+    "files.eol": "\n",
     "eslint.packageManager": "yarn",
     "editor.wordWrapColumn": 160
 }

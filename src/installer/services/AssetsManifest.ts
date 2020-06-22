@@ -1,8 +1,9 @@
 import fs from "fs-extra";
 import path from "path";
 import os from "os";
-import { Service } from "typedi";
+import { Service, Inject } from "typedi";
 import { Artifact, AssetsManifest, Script, Arch } from "../../types/manifest";
+import { Environment } from "./Environment";
 
 /**
  * Asset manifest manager.
@@ -14,6 +15,16 @@ import { Artifact, AssetsManifest, Script, Arch } from "../../types/manifest";
  */
 @Service()
 export class AssetManifestManager {
+    /**
+     * Injectede environment.
+     *
+     * @private
+     * @type {Environment}
+     * @memberof AssetManifestManager
+     */
+    @Inject()
+    private env!: Environment;
+
     /**
      * Internal manifest object.
      *
@@ -32,6 +43,21 @@ export class AssetManifestManager {
     public load(filepath: string): void {
         if (fs.existsSync(path.dirname(filepath))) {
             this.manifest = fs.readJSONSync(filepath) as AssetsManifest;
+
+            // Normalize paths.
+            this.manifest.artifacts = this.manifest.artifacts.map((a) => {
+                if (a.path) {
+                    a.path = path.join(this.env.assetsDirectory, a.path);
+                }
+
+                return a;
+            });
+
+            this.manifest.scripts = this.manifest.scripts.map((s) => {
+                s.path = path.join(this.env.assetsDirectory, s.path);
+
+                return s;
+            });
         } else {
             throw new Error("Installer manifest could not be loaded");
         }

@@ -1,10 +1,16 @@
 import _ from "lodash";
 import Listr from "listr";
+import Progress from "progress-string";
 import { Service, Inject } from "typedi";
 import { InstallerConfiguration, Packages, Package } from "../types/configuration";
 import { AssetRegistry } from "./AssetsRegistry";
 import { Artifact, Script, Arch } from "../types/manifest";
 
+/**
+ * Configurator context, to be passed along the configuration task chain.
+ *
+ * @interface ConfiguratorContext
+ */
 interface ConfiguratorContext {
     success: boolean;
 }
@@ -86,11 +92,16 @@ export class InstallerConfigurator {
 
                 const registerPackageTask: Listr.ListrTask<ConfiguratorContext> = {
                     title: `Register ${name}`,
-                    task: async (ctx) => {
+                    task: async (ctx, task) => {
                         if (this.isPackageValid(pkg)) {
                             const artifacts = this.createArtifacts(name, pkg);
                             for (const artifact of artifacts) {
-                                await this.registry.addArtifact(artifact, download);
+                                let total = 0;
+                                let progress = new Progress({ width: 20, total: 100 });
+                                await this.registry.addArtifact(artifact, download, (percent) => {
+                                    total = total + percent;
+                                    task.output = `Downloading [${progress(total)}] ${Math.round(total)}%`;
+                                });
                             }
 
                             const script = this.createScript(name, pkg);
@@ -100,7 +111,7 @@ export class InstallerConfigurator {
 
                             ctx.success = true;
                         } else {
-                            //TODO: Message to the user.
+                            throw new Error(`Unable to register package ${pkg}, its definition is invalid`);
                         }
                     },
                 };

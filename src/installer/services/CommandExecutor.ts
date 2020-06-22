@@ -31,6 +31,7 @@ export class CommandExecutor {
     public async exec(artifact: Artifact): Promise<void> {
         const command = this.createCommand(artifact);
         if (command) {
+            console.log(command);
             return new Promise<void>((resolve, reject) => {
                 exec(command, (error) => {
                     if (error) {
@@ -41,6 +42,22 @@ export class CommandExecutor {
                 });
             });
         }
+    }
+
+    /**
+     * Returns the generated command for a given artifact.
+     *
+     * @param {Artifact} artifact Artifact to generate command for
+     * @returns {string} Generated command
+     * @memberof CommandExecutor
+     */
+    public getCommand(artifact: Artifact): string {
+        let result = this.createCommand(artifact);
+        if (!result) {
+            result = artifact.cmd ? artifact.cmd : artifact.path ? artifact.path : "";
+        }
+
+        return result;
     }
 
     /**

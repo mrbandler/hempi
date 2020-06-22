@@ -2,9 +2,8 @@ import path from "path";
 import fs from "fs-extra";
 import os from "os";
 import vm from "vm";
-import { Service, Inject } from "typedi";
+import { Service } from "typedi";
 import { Script } from "../../types/manifest";
-import { Environment } from "./Environment";
 
 /**
  * Script executor.
@@ -15,16 +14,6 @@ import { Environment } from "./Environment";
 @Service()
 export class ScriptExecutor {
     /**
-     * Injected environment.
-     *
-     * @private
-     * @type {Environment}
-     * @memberof ScriptExecutor
-     */
-    @Inject()
-    private env!: Environment;
-
-    /**
      * Executes a given post install script.
      *
      * @param {Script} script Script to execute
@@ -32,8 +21,7 @@ export class ScriptExecutor {
      * @memberof ScriptExecutor
      */
     public exec(script: Script): any {
-        const filepath = path.join(this.env.assetsDirectory, script.path);
-        const source = fs.readFileSync(filepath, "utf-8");
+        const source = fs.readFileSync(script.path, "utf-8");
 
         return vm.runInNewContext(source, this.createSandboxEnv());
     }

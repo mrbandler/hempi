@@ -36,6 +36,7 @@ export class InstallerPackager {
                 title: "Package installer",
                 task: async () =>
                     new Promise<void>((resolve, reject) => {
+                        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
                         exec(`node node_modules/pkg/lib-es5/bin.js ${this.env.installerDirectory}/package.json -t host -o ${path}`, (error) => {
                             if (error) {
                                 reject(error);
