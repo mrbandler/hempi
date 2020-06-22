@@ -1,5 +1,6 @@
 /**
- * Holds environment variables regarding the current dirname.
+ * Holds environment variables regarding the current context.
  */
-
-export const INSTALLER_DIRECTORY: string = __dirname;
+export const env = {
+    INSTALLER_DIRECTORY: __dirname,
+};

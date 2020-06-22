@@ -3,6 +3,7 @@ import { Options } from "../types/options";
 import { ConfigurationParser } from "./ConfigurationParser";
 import { InstallerPackager } from "./InstallerPackager";
 import { InstallerConfigurator } from "./InstallerConfigurator";
+import { Environment } from "../installer/services/Environment";
 
 /**
  * Installer builder.
@@ -15,6 +16,16 @@ import { InstallerConfigurator } from "./InstallerConfigurator";
  */
 @Service()
 export class InstallerBuilder {
+    /**
+     * Injected environment.
+     *
+     * @private
+     * @type {Environment}
+     * @memberof InstallerBuilder
+     */
+    @Inject()
+    private env!: Environment;
+
     /**
      * Injected configuration parser.
      *
@@ -53,8 +64,9 @@ export class InstallerBuilder {
      * @memberof InstallerBuilder
      */
     public async build(options: Options): Promise<void> {
-        const configuration = await this.parser.parse(options.config);
+        this.env.disableStrictSSL = options.disableStrictSsl;
 
+        const configuration = await this.parser.parse(options.config);
         const configured = await this.configurator.configure(configuration, options.download);
         if (configured) {
             await this.packager.package(options.output);

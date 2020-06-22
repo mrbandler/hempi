@@ -1,5 +1,5 @@
 import { Service } from "typedi";
-import { INSTALLER_DIRECTORY } from "../env";
+import { env } from "../env";
 
 /**
  * Environment service.
@@ -11,6 +11,8 @@ import { INSTALLER_DIRECTORY } from "../env";
  */
 @Service()
 export class Environment {
+    private disableSSL: boolean = false;
+
     /**
      * CLI bin directory path.
      *
@@ -19,7 +21,27 @@ export class Environment {
      * @memberof Environment
      */
     public get installerDirectory(): string {
-        return INSTALLER_DIRECTORY;
+        return env.INSTALLER_DIRECTORY;
+    }
+
+    /**
+     * Strict SSL disabled.
+     *
+     * @readonly
+     * @type {boolean}
+     * @memberof Environment
+     */
+    public get disableStrictSSL(): boolean {
+        return this.disableSSL;
+    }
+
+    /**
+     * Set strict SSL disabled.
+     *
+     * @memberof Environment
+     */
+    public set disableStrictSSL(value: boolean) {
+        this.disableSSL = value;
     }
 
     /**

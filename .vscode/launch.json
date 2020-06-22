@@ -8,7 +8,7 @@
             "name": "Debug",
             "type": "node",
             "request": "launch",
-            "args": ["${workspaceRoot}/src/index.ts", "-c", "test.yml", "-o", "./test-installer.exe", "-d"],
+            "args": ["${workspaceRoot}/src/index.ts", "-c", "test.yml", "-o", "./test-installer.exe", "-d", "--disable-strict-ssl"],
             "runtimeArgs": ["-r", "ts-node/register"],
             "cwd": "${workspaceRoot}/test",
             "protocol": "inspector",

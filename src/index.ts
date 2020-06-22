@@ -16,6 +16,7 @@ async function main() {
         .option("-c, --config <config.yml>", "Installer configuration")
         .option("-o, --output <installer.exe>", "Output path for the custom installer", "./hempi.exe")
         .option("-d, --download", "Whether the installers should be downloaded for a custom offline installer", false)
+        .option("--disable-strict-ssl", "Whether strict SSL should be disabled or not", false)
         .parse(process.argv);
 
     if (!process.argv.slice(2).length) {
@@ -29,4 +30,6 @@ async function main() {
 }
 
 // Calling the main entry point.
-main().then(_.noop).catch(_.noop);
+main()
+    .then(_.noop)
+    .catch((error) => console.log(error.message));

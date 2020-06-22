@@ -32,7 +32,7 @@ export class AssetManifestManager {
      * @type {AssetsManifest}
      * @memberof AssetManifestManager
      */
-    private manifest: AssetsManifest = { artifacts: [], scripts: [] };
+    private manifest: AssetsManifest = { artifacts: [], scripts: [], disableStrictSSL: false };
 
     /**
      * Loads a manifest from disk given a filepath.
@@ -43,6 +43,7 @@ export class AssetManifestManager {
     public load(filepath: string): void {
         if (fs.existsSync(path.dirname(filepath))) {
             this.manifest = fs.readJSONSync(filepath) as AssetsManifest;
+            this.env.disableStrictSSL = this.manifest.disableStrictSSL;
 
             // Normalize paths.
             this.manifest.artifacts = this.manifest.artifacts.map((a) => {
@@ -71,6 +72,7 @@ export class AssetManifestManager {
      */
     public save(filepath: string): void {
         if (fs.pathExistsSync(path.dirname(filepath))) {
+            this.manifest.disableStrictSSL = this.env.disableStrictSSL;
             fs.writeJSONSync(filepath, this.manifest);
         } else {
             throw new Error("Unable to save manifest, assets registry not initilized");

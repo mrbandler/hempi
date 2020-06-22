@@ -35,12 +35,15 @@ export class ArtifactsDownloader {
      * @memberof ArtifactsDownloader
      */
     public async download(filename: string, url: string, toRegistry?: boolean, progress?: ProgressCallback): Promise<string> {
-        const client = axios.create({
-            httpsAgent: new https.Agent({
-                rejectUnauthorized: false,
-            }),
-        });
+        const clientConfig = this.env.disableStrictSSL
+            ? {
+                  httpsAgent: new https.Agent({
+                      rejectUnauthorized: false,
+                  }),
+              }
+            : {};
 
+        const client = axios.create(clientConfig);
         const response = await client.get(url, {
             responseType: "stream",
         });

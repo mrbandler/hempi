@@ -43,4 +43,5 @@ export interface Script {
 export interface AssetsManifest {
     artifacts: Artifact[];
     scripts: Script[];
+    disableStrictSSL: boolean;
 }
