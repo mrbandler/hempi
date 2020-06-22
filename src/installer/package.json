@@ -16,7 +16,9 @@
         "hemp-installer": "./index.js"
     },
     "files": [
-        "assets"
+        "assets",
+        "services",
+        "env.js"
     ],
     "pkg": {
         "scripts": "./**/*.js",
