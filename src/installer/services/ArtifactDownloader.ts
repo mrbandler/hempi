@@ -1,8 +1,9 @@
-import axios from "axios";
-import https from "https";
+import os from "os";
 import fs from "fs-extra";
 import path from "path";
-import os from "os";
+import https from "https";
+import axios from "axios";
+import mime from "mime-types";
 import { Service, Inject } from "typedi";
 import { Environment } from "./Environment";
 import { ProgressCallback } from "../../types/progress";
@@ -58,7 +59,8 @@ export class ArtifactsDownloader {
 
         return new Promise<string>((resolve, reject) => {
             const basepath = toRegistry ? this.env.assetsArtifactsDirectory : os.tmpdir();
-            const filepath = path.join(basepath, `${filename}${path.extname(url)}`);
+            const ext = mime.extension(response.headers["content-type"]) ? mime.extension(response.headers["content-type"]) : "exe";
+            const filepath = path.join(basepath, `${filename}.${ext}`);
             const writer = fs.createWriteStream(filepath);
 
             response.data.pipe(writer);
