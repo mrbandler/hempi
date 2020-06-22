@@ -59,8 +59,8 @@ export class ArtifactsDownloader {
 
         return new Promise<string>((resolve, reject) => {
             const basepath = toRegistry ? this.env.assetsArtifactsDirectory : os.tmpdir();
-            const ext = mime.extension(response.headers["content-type"]) ? mime.extension(response.headers["content-type"]) : "exe";
-            const filepath = path.join(basepath, `${filename}.${ext}`);
+            const ext = this.getFileExtension(url, response.headers["content-type"]);
+            const filepath = path.join(basepath, `${filename}${ext}`);
             const writer = fs.createWriteStream(filepath);
 
             response.data.pipe(writer);
@@ -69,5 +69,27 @@ export class ArtifactsDownloader {
                 resolve(filepath);
             });
         });
+    }
+
+    /**
+     * Returns the file extension based on the URL and the content type.
+     *
+     * @private
+     * @param {string} url URL of the file to download
+     * @param {string} contentType Content type of the file to download
+     * @returns {string} File extension
+     * @memberof ArtifactsDownloader
+     */
+    private getFileExtension(url: string, contentType: string): string {
+        let result = ".exe";
+
+        const ext = path.extname(url);
+        if (ext !== "") {
+            result = ext;
+        } else if (contentType && mime.extension(contentType)) {
+            result = ("." + mime.extension(contentType)) as string;
+        }
+
+        return result;
     }
 }
