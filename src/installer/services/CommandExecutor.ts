@@ -19,7 +19,7 @@ export class CommandExecutor {
      * @type {string}
      * @memberof CommandExecutor
      */
-    private readonly EXE: string = "{exe}";
+    private readonly FILE: string = "{file}";
 
     /**
      * Executes the commands associated with a given artifact.
@@ -73,7 +73,7 @@ export class CommandExecutor {
         let result: string | undefined = undefined;
 
         if (artifact.path) {
-            result = artifact.cmd ? artifact.cmd.replace(this.EXE, artifact.path) : artifact.path;
+            result = artifact.cmd ? artifact.cmd.replace(this.FILE, artifact.path) : artifact.path;
         }
 
         return result;
