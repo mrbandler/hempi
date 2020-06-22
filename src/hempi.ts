@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import "reflect-metadata";
 import _ from "lodash";
 import pkg from "../package.json";
@@ -30,6 +32,4 @@ async function main() {
 }
 
 // Calling the main entry point.
-main()
-    .then(_.noop)
-    .catch((error) => console.log(error.message));
+main().then(_.noop).catch(_.noop);

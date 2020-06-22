@@ -31,7 +31,6 @@ export class CommandExecutor {
     public async exec(artifact: Artifact): Promise<void> {
         const command = this.createCommand(artifact);
         if (command) {
-            console.log(command);
             return new Promise<void>((resolve, reject) => {
                 exec(command, (error) => {
                     if (error) {

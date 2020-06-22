@@ -1,5 +1,5 @@
 import Listr from "listr";
-import { exec } from "child_process";
+import { exec } from "pkg";
 import { Service, Inject } from "typedi";
 import { Environment } from "../installer/services/Environment";
 
@@ -34,18 +34,10 @@ export class InstallerPackager {
         await new Listr([
             {
                 title: "Packaging installer",
-                task: async () =>
-                    new Promise<void>((resolve, reject) => {
-                        if (this.env.disableStrictSSL) process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
-
-                        exec(`node node_modules/pkg/lib-es5/bin.js ${this.env.installerDirectory}/package.json -t host -o ${path}`, (error) => {
-                            if (error) {
-                                reject(error);
-                            } else {
-                                resolve();
-                            }
-                        });
-                    }),
+                task: async () => {
+                    console.log = function () {}; //! This is very bad! But it locks awful in the CLI output, considering creating a PR for pgk and enable output by parameter.
+                    await exec([`${this.env.installerDirectory}/package.json`, "-t", "host", "-o", path]);
+                },
             },
         ]).run();
     }

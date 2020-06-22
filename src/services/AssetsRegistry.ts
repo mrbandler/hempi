@@ -131,16 +131,28 @@ export class AssetRegistry {
      * @memberof AssetRegistry
      */
     private clearAssetsDirectory(): void {
-        fs.rmdirSync(this.env.assetsArtifactsDirectory, {
-            recursive: true,
-        });
+        this.clearDirectory(this.env.assetsArtifactsDirectory);
+        this.clearDirectory(this.env.assetsScriptsDirectory);
+        this.clearDirectory(this.env.assetsDirectory);
+    }
 
-        fs.rmdirSync(this.env.assetsScriptsDirectory, {
-            recursive: true,
-        });
+    /**
+     * Clears the directory for a given path.
+     *
+     * @private
+     * @param {string} directoryPath Directory path for the directory to clear
+     * @memberof AssetRegistry
+     */
+    private clearDirectory(directoryPath: string): void {
+        if (fs.existsSync(directoryPath)) {
+            fs.readdirSync(directoryPath)
+                .filter((c) => path.extname(c) !== "")
+                .map((c) => path.join(directoryPath, c))
+                .forEach((c) => fs.unlinkSync(c));
 
-        fs.rmdirSync(this.env.assetsDirectory, {
-            recursive: true,
-        });
+            fs.rmdirSync(directoryPath, {
+                recursive: true,
+            });
+        }
     }
 }

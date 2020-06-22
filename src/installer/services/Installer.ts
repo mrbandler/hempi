@@ -187,7 +187,6 @@ export class Installer {
 
                     ctx.didInstall = true;
                 } catch (error) {
-                    console.log("Command failed!");
                     ctx.didInstall = false;
 
                     throw error;

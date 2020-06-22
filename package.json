@@ -2,7 +2,6 @@
     "name": "hempi",
     "version": "0.1.0",
     "description": "Hempi - Highly Elaborate Multi-Package Installer",
-    "main": "index.js",
     "repository": "git@github.com:mrbandler/hepi.git",
     "author": "mrbandler <mrbandler@fivefingergames.com>",
     "license": "MIT",
@@ -11,21 +10,13 @@
     "bugs": {
         "url": "https://github.com/mrbandler/hepi/issues"
     },
-    "os": [
-        "win32"
-    ],
-    "cpu": [
-        "x64",
-        "x32"
-    ],
     "bin": {
-        "hepi": "./bin/index.js"
+        "hempi": "./bin/hempi.js"
     },
     "files": [
         "bin"
     ],
     "scripts": {
-        "start": "node",
         "build": "rimraf ./bin && tsc --build src",
         "build:start": "yarn build && yarn start",
         "build:link": "yarn build && npm link"
