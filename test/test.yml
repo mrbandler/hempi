@@ -1,7 +1,11 @@
 ---
 packages:
+    Win10Debloat:
+        url:
+            x32: https://raw.githubusercontent.com/Sycnex/Windows10Debloater/master/Windows10SysPrepDebloater.ps1
+        cmd: "powershell.exe {file} -SysPrep -Debloat"
     Greenshot:
         url:
             x32: https://github.com/greenshot/greenshot/releases/download/Greenshot-RELEASE-1.2.10.6/Greenshot-INSTALLER-1.2.10.6-RELEASE.exe
-        cmd: "{exe} /VERYSILENT /SUPPRESSMESSAGEBOXES /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /NORESTART"
+        cmd: "{file} /VERYSILENT /SUPPRESSMESSAGEBOXES /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /NORESTART"
         script: ./gs-after-install.js
