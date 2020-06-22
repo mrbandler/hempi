@@ -3,7 +3,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
     "files.exclude": {
-        "**/node_modules": false
+        "**/node_modules": true
     },
     "files.eol": "\n",
     "eslint.packageManager": "yarn",
