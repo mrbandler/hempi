@@ -33,7 +33,7 @@ export class InstallerPackager {
     public async package(path: string): Promise<void> {
         await new Listr([
             {
-                title: "Package installer",
+                title: "Packaging installer",
                 task: async () =>
                     new Promise<void>((resolve, reject) => {
                         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";

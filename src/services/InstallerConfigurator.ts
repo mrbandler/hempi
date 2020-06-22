@@ -46,7 +46,7 @@ export class InstallerConfigurator {
     public async configure(configuration: InstallerConfiguration, download?: boolean): Promise<boolean> {
         if (configuration.packages) {
             const initRegistryTask: Listr.ListrTask<ConfiguratorContext> = {
-                title: "Initialize package registry",
+                title: "Initializing package registry",
                 task: () => {
                     this.registry.initAssetsDirectory();
 
@@ -91,7 +91,7 @@ export class InstallerConfigurator {
                 const pkg = packages[name] as Package;
 
                 const registerPackageTask: Listr.ListrTask<ConfiguratorContext> = {
-                    title: `Register ${name}`,
+                    title: `Registering ${name}`,
                     task: async (ctx, task) => {
                         if (this.isPackageValid(pkg)) {
                             const artifacts = this.createArtifacts(name, pkg);
