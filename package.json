@@ -10,6 +10,13 @@
     "bugs": {
         "url": "https://github.com/mrbandler/hepi/issues"
     },
+    "os": [
+        "win32"
+    ],
+    "cpu": [
+        "x64",
+        "x32"
+    ],
     "bin": {
         "hempi": "./bin/hempi.js"
     },
