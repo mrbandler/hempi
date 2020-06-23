@@ -241,7 +241,8 @@ export class Installer {
         if (artifact.adds) {
             for (let i = 0; i < artifact.adds.length; i++) {
                 const add = artifact.adds[i];
-                add.path = await this.downloader.download(`${artifact.package}-${artifact.arch}`, add.url, false, progress);
+                add.path = await this.downloader.download(`${artifact.package}-${artifact.arch}-add${i}`, add.url, false, progress);
+                artifact.adds[i] = add;
             }
         }
 
