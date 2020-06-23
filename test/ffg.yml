@@ -1,0 +1,10 @@
+---
+packages:
+    Sourcetree:
+        url:
+            x32: https://product-downloads.atlassian.com/software/sourcetree/windows/ga/SourcetreeEnterpriseSetup_3.3.9.msi
+        cmd: "{file} /qn ACCEPTEULA=1 ALLUSERS=1"
+    Jetbrains Rider:
+        url:
+            x32: https://download.jetbrains.com/rider/JetBrains.Rider-2020.1.3.exe
+        cmd: "{file} /S"

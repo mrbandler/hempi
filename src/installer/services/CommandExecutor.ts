@@ -74,7 +74,7 @@ export class CommandExecutor {
         let result: string | undefined = undefined;
 
         if (artifact.path) {
-            result = artifact.cmd ? artifact.cmd.replace(this.FILE, artifact.path) : artifact.path;
+            result = artifact.cmd ? artifact.cmd.replace(this.FILE, `"${artifact.path}"`) : artifact.path;
         }
 
         return result;
