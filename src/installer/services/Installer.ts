@@ -2,7 +2,7 @@ import _ from "lodash";
 import Listr from "listr";
 import Progress from "progress-string";
 import { Service, Inject } from "typedi";
-import { Artifact, Script, Arch } from "../../types/manifest";
+import { Artifact, Script, Arch, Add } from "../../types/manifest";
 import { Environment } from "./Environment";
 import { AssetManifestManager } from "./AssetsManifest";
 import { ArtifactsDownloader } from "./ArtifactDownloader";
@@ -145,6 +145,8 @@ export class Installer {
             task: async (ctx, task) => {
                 let total = 0;
                 let progress = new Progress({ width: 20, total: 100 });
+                console.log(ctx.artifact.adds);
+
                 ctx.artifact = await this.downloadArtifact(ctx.artifact, (percent) => {
                     total = total + percent;
                     task.output = `Downloading (${ctx.artifact.arch === Arch.x32 ? "x32" : "x64"}) [${progress(total)}] ${Math.round(total)}%`;
@@ -238,10 +240,14 @@ export class Installer {
             artifact.path = await this.downloader.download(`${artifact.package}-${artifact.arch}`, artifact.url, false, progress);
         }
 
-        if (artifact.adds) {
+        if (artifact.adds && !_.isEmpty(artifact.adds)) {
             for (let i = 0; i < artifact.adds.length; i++) {
-                const add = artifact.adds[i];
-                add.path = await this.downloader.download(`${artifact.package}-${artifact.arch}-add${i}`, add.url, false, progress);
+                let add = artifact.adds[i];
+
+                if (!add.path) {
+                    add.path = await this.downloader.download(`${artifact.package}-${artifact.arch}-add${i}`, add.url, false, progress);
+                }
+
                 artifact.adds[i] = add;
             }
         }
