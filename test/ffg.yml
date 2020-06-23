@@ -1,11 +1,5 @@
 ---
 packages:
-    Echo:
-        cmd: "echo 'This is a test!'"
-    Sourcetree:
-        cmd: "echo '{file} /qn ACCEPTEULA=1 ALLUSERS=1'"
-        url:
-            x32: https://product-downloads.atlassian.com/software/sourcetree/windows/ga/SourcetreeEnterpriseSetup_3.3.9.msi
     Jetbrains Rider:
         cmd: "echo '{file} /S /CONFIG {add1}'"
         url:
