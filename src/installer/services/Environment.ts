@@ -1,3 +1,6 @@
+import os from "os";
+import fs from "fs-extra";
+import path from "path";
 import { Service } from "typedi";
 import { env } from "../env";
 
@@ -86,5 +89,21 @@ export class Environment {
      */
     public get assetsManifestPath(): string {
         return `${this.assetsDirectory}/manifest.json`;
+    }
+
+    /**
+     * Temp directory of the host OS.
+     *
+     * @readonly
+     * @type {string}
+     * @memberof Environment
+     */
+    public get osTempDirectory(): string {
+        const result = path.join(os.tmpdir(), "hempi");
+        if (!fs.existsSync(result)) {
+            fs.mkdirsSync(result);
+        }
+
+        return result;
     }
 }

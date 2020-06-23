@@ -1,4 +1,3 @@
-import os from "os";
 import _ from "lodash";
 import Listr from "listr";
 import Progress from "progress-string";
@@ -207,7 +206,7 @@ export class Installer {
 
         const removingArtifactTask: Listr.ListrTask<InstallerContext> = {
             title: "Removing artifact",
-            enabled: (ctx) => (ctx.artifact.path ? ctx.artifact.path.includes(os.tmpdir()) : false),
+            enabled: (ctx) => (ctx.artifact.path ? ctx.artifact.path.includes(this.env.osTempDirectory) : false),
             task: (ctx) =>
                 new Promise<void>((resolve, _) => {
                     this.remover.remove(ctx.artifact);

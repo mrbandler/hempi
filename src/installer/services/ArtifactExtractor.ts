@@ -1,10 +1,10 @@
-import os from "os";
 import fs, { WriteStream } from "fs-extra";
 import path from "path";
 import streamProgress from "progress-stream";
-import { Service } from "typedi";
+import { Service, Inject } from "typedi";
 import { Artifact } from "../../types/manifest";
 import { ProgressCallback } from "../../types/progress";
+import { Environment } from "./Environment";
 
 /**
  * Artifact extractor.
@@ -16,6 +16,16 @@ import { ProgressCallback } from "../../types/progress";
  */
 @Service()
 export class ArtifactExtractor {
+    /**
+     * Injected environment.
+     *
+     * @private
+     * @type {Environment}
+     * @memberof ArtifactExtractor
+     */
+    @Inject()
+    private env!: Environment;
+
     /**
      * Extracts the given artifact from the self-contained package.
      *
@@ -29,7 +39,7 @@ export class ArtifactExtractor {
     public async extract(artifact: Artifact, progress?: ProgressCallback): Promise<Artifact> {
         if (artifact.path) {
             const archivePath = artifact.path;
-            const filepath = path.join(os.tmpdir(), path.basename(artifact.path));
+            const filepath = path.join(this.env.osTempDirectory, path.basename(artifact.path));
             artifact.path = filepath;
 
             await this.copyFromArchive(archivePath, filepath, progress);
@@ -37,7 +47,7 @@ export class ArtifactExtractor {
             if (artifact.adds) {
                 for (let i = 0; i < artifact.adds.length; i++) {
                     const add = artifact.adds[i];
-                    const filepath = path.join(os.tmpdir(), path.basename(add));
+                    const filepath = path.join(this.env.osTempDirectory, path.basename(add));
                     console.log(filepath);
                     await this.copyFromArchive(add, filepath, progress);
 
