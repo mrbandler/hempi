@@ -47,11 +47,14 @@ export class ArtifactExtractor {
             if (artifact.adds) {
                 for (let i = 0; i < artifact.adds.length; i++) {
                     const add = artifact.adds[i];
-                    const filepath = path.join(this.env.osTempDirectory, path.basename(add));
-                    console.log(filepath);
-                    await this.copyFromArchive(add, filepath, progress);
 
-                    artifact.adds[i] = filepath;
+                    if (add.path) {
+                        const filepath = path.join(this.env.osTempDirectory, path.basename(add.path));
+                        await this.copyFromArchive(add.path, filepath, progress);
+
+                        add.path = filepath;
+                        artifact.adds[i] = add;
+                    }
                 }
             }
         }

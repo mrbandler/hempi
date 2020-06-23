@@ -87,14 +87,14 @@ export class AssetRegistry {
             artifact.path = await this.downloader.download(`${artifact.package}-${artifact.arch}`, artifact.url, download, progress);
             artifact.path = artifact.path.replace(path.normalize(this.env.assetsDirectory), ".");
 
-            if (artifact.adds) {
+            if (download && artifact.adds) {
                 for (let i = 0; i < artifact.adds.length; i++) {
-                    let url = artifact.adds[i];
+                    let add = artifact.adds[i];
 
-                    url = await this.downloader.download(`${artifact.package}-${artifact.arch}-add${i}`, url, download, progress);
-                    url = url.replace(path.normalize(this.env.assetsDirectory), ".");
+                    add.path = await this.downloader.download(`${artifact.package}-${artifact.arch}-add${i}`, add.url, download, progress);
+                    add.path = add.path.replace(path.normalize(this.env.assetsDirectory), ".");
 
-                    artifact.adds[i] = url;
+                    artifact.adds[i] = add;
                 }
             }
         }
