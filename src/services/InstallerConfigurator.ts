@@ -150,7 +150,11 @@ export class InstallerConfigurator {
 
             if (pkg.url.adds) {
                 for (const r of result) {
-                    r.adds = pkg.url.adds;
+                    r.adds = pkg.url.adds.map((a) => {
+                        return {
+                            url: a,
+                        };
+                    });
                 }
             }
         } else {

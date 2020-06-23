@@ -239,7 +239,10 @@ export class Installer {
         }
 
         if (artifact.adds) {
-            for (let i = 0; i < artifact.adds.length; i++) {}
+            for (let i = 0; i < artifact.adds.length; i++) {
+                const add = artifact.adds[i];
+                add.path = await this.downloader.download(`${artifact.package}-${artifact.arch}`, add.url, false, progress);
+            }
         }
 
         return artifact;

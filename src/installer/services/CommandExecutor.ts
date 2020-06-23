@@ -79,8 +79,10 @@ export class CommandExecutor {
             if (artifact.adds) {
                 for (let i = 0; i < artifact.adds.length; i++) {
                     const add = artifact.adds[i];
-                    const key = this.ADD.replace("#", `${i + 1}`);
-                    cmd.replace(key, add);
+                    if (add.path) {
+                        const key = this.ADD.replace("#", `${i + 1}`);
+                        cmd.replace(key, add.path);
+                    }
                 }
             }
 

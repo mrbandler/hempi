@@ -10,6 +10,17 @@ export enum Arch {
 }
 
 /**
+ * Additional artifact data.
+ *
+ * @export
+ * @interface Add
+ */
+export interface Add {
+    url: string;
+    path?: string;
+}
+
+/**
  * Package artifact.
  *
  * @export
@@ -19,7 +30,7 @@ export interface Artifact {
     package: string;
     cmd: string;
     url?: string;
-    adds?: string[];
+    adds?: Add[];
     arch?: Arch;
     path?: string;
 }

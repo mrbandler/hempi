@@ -52,7 +52,13 @@ export class AssetManifestManager {
                 }
 
                 if (a.adds) {
-                    a.adds = a.adds.map((add) => path.join(this.env.assetsDirectory, add));
+                    a.adds = a.adds.map((add) => {
+                        if (add.path) {
+                            add.path = path.join(this.env.assetsDirectory, add.path);
+                        }
+
+                        return add;
+                    });
                 }
 
                 return a;
