@@ -83,9 +83,20 @@ export class AssetRegistry {
      * @memberof AssetRegistry
      */
     public async addArtifact(artifact: Artifact, download?: boolean, progress?: ProgressCallback): Promise<void> {
-        if (download) {
+        if (download && artifact.url) {
             artifact.path = await this.downloader.download(`${artifact.package}-${artifact.arch}`, artifact.url, download, progress);
             artifact.path = artifact.path.replace(path.normalize(this.env.assetsDirectory), ".");
+
+            if (download && artifact.adds) {
+                for (let i = 0; i < artifact.adds.length; i++) {
+                    let add = artifact.adds[i];
+
+                    add.path = await this.downloader.download(`${artifact.package}-${artifact.arch}-add${i}`, add.url, download, progress);
+                    add.path = add.path.replace(path.normalize(this.env.assetsDirectory), ".");
+
+                    artifact.adds[i] = add;
+                }
+            }
         }
 
         this.manifest.addArtifact(artifact);
@@ -99,7 +110,8 @@ export class AssetRegistry {
      */
     public addScript(script: Script): void {
         if (fs.existsSync(script.path)) {
-            const filename = path.join(this.env.assetsScriptsDirectory, path.basename(script.path));
+            const basepath = path.join(this.env.assetsScriptsDirectory, script.package);
+            const filename = path.join(basepath, path.basename(script.path));
             fs.copyFileSync(script.path, filename);
 
             script.path = filename.replace(path.normalize(this.env.assetsDirectory), ".");

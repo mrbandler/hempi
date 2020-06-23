@@ -4,7 +4,7 @@ import Progress from "progress-string";
 import { Service, Inject } from "typedi";
 import { InstallerConfiguration, Packages, Package } from "../types/configuration";
 import { AssetRegistry } from "./AssetsRegistry";
-import { Artifact, Script, Arch } from "../types/manifest";
+import { Artifact, Script, Arch, ScriptType } from "../types/manifest";
 
 /**
  * Configurator context, to be passed along the configuration task chain.
@@ -49,14 +49,10 @@ export class InstallerConfigurator {
                 title: "Initializing package registry",
                 task: () => {
                     this.registry.initAssetsDirectory();
-
-                    return new Listr(this.registerPackages(configuration.packages, download), {
-                        exitOnError: true,
-                        concurrent: false,
-                    });
                 },
             };
 
+            const packageTasks = this.registerPackages(configuration.packages, download);
             const saveManifestTask: Listr.ListrTask<ConfiguratorContext> = {
                 title: "Persisting registry manifest",
                 enabled: (ctx) => ctx.success === true,
@@ -65,7 +61,7 @@ export class InstallerConfigurator {
                 },
             };
 
-            const tasks = new Listr([initRegistryTask, saveManifestTask]);
+            const tasks = new Listr([initRegistryTask, ...packageTasks, saveManifestTask]);
             const context = await tasks.run();
 
             return context.success;
@@ -104,8 +100,8 @@ export class InstallerConfigurator {
                                 });
                             }
 
-                            const script = this.createScript(name, pkg);
-                            if (script) {
+                            const scripts = this.createScript(name, pkg);
+                            for (const script of scripts) {
                                 this.registry.addScript(script);
                             }
 
@@ -135,18 +131,35 @@ export class InstallerConfigurator {
     private createArtifacts(name: string, pkg: Package): Artifact[] {
         let result: Artifact[] = [];
 
-        result.push({
-            package: name,
-            arch: Arch.x32,
-            url: pkg.url.x32,
-            cmd: pkg.cmd,
-        });
-
-        if (pkg.url.x64) {
+        if (pkg.url) {
             result.push({
                 package: name,
-                arch: Arch.x64,
-                url: pkg.url.x64,
+                arch: Arch.x32,
+                url: pkg.url.x32,
+                cmd: pkg.cmd,
+            });
+
+            if (pkg.url.x64) {
+                result.push({
+                    package: name,
+                    arch: Arch.x64,
+                    url: pkg.url.x64,
+                    cmd: pkg.cmd,
+                });
+            }
+
+            if (pkg.url.adds) {
+                for (const r of result) {
+                    r.adds = pkg.url.adds.map((a) => {
+                        return {
+                            url: a,
+                        };
+                    });
+                }
+            }
+        } else {
+            result.push({
+                package: name,
                 cmd: pkg.cmd,
             });
         }
@@ -160,16 +173,31 @@ export class InstallerConfigurator {
      * @private
      * @param {string} name Name of the package
      * @param {Package} pkg Package data
-     * @returns {(Script | undefined)} Created script (can be undefined when package has no post install script associated)
+     * @returns {Script[]} Created scripts
      * @memberof InstallerConfigurator
      */
-    private createScript(name: string, pkg: Package): Script | undefined {
-        return pkg.script
-            ? {
-                  package: name,
-                  path: pkg.script,
-              }
-            : undefined;
+    private createScript(name: string, pkg: Package): Script[] {
+        let result: Script[] = [];
+
+        if (pkg.scripts) {
+            if (pkg.scripts.pre) {
+                result.push({
+                    package: name,
+                    type: ScriptType.Pre,
+                    path: pkg.scripts.pre,
+                });
+            }
+
+            if (pkg.scripts.post) {
+                result.push({
+                    package: name,
+                    type: ScriptType.Post,
+                    path: pkg.scripts.post,
+                });
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -181,6 +209,6 @@ export class InstallerConfigurator {
      * @memberof InstallerConfigurator
      */
     private isPackageValid(pkg: Package): boolean {
-        return !_.isNull(pkg.url.x32);
+        return !_.isNull(pkg.cmd);
     }
 }

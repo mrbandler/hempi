@@ -37,18 +37,12 @@ export class ConfigurationParser {
             title: "Reading installer configuration",
             task: (ctx) => {
                 ctx.contents = this.read(filepath);
-            },
-        };
-
-        const parseTask: Listr.ListrTask<ParserContext> = {
-            title: "Parsing installer configuration",
-            task: (ctx) => {
                 ctx.configuration = yml.parse(ctx.contents) as InstallerConfiguration;
                 ctx.configuration = this.sanitizePaths(filepath, ctx.configuration);
             },
         };
 
-        const tasks = new Listr([readTask, parseTask]);
+        const tasks = new Listr([readTask]);
         const context = await tasks.run();
         return context.configuration;
 
@@ -93,8 +87,9 @@ export class ConfigurationParser {
                 if (configuration.packages.hasOwnProperty(name)) {
                     const pkg = configuration.packages[name];
 
-                    if (pkg.script) {
-                        pkg.script = path.join(path.dirname(filepath), pkg.script);
+                    if (pkg.scripts) {
+                        pkg.scripts.pre = pkg.scripts.pre ? path.join(path.dirname(filepath), pkg.scripts.pre) : undefined;
+                        pkg.scripts.post = pkg.scripts.post ? path.join(path.dirname(filepath), pkg.scripts.post) : undefined;
                     }
                 }
             }

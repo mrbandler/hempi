@@ -1,4 +1,3 @@
-import os from "os";
 import _ from "lodash";
 import Listr from "listr";
 import Progress from "progress-string";
@@ -11,7 +10,6 @@ import { CommandExecutor } from "./CommandExecutor";
 import { ScriptExecutor } from "./ScriptExecutor";
 import { ArtifactRemover } from "./ArtifactRemover";
 import { ArtifactExtractor } from "./ArtifactExtractor";
-import { ProgressCallback } from "../../types/progress";
 
 /**
  * Installer context, to be passed in the installation task chain.
@@ -116,9 +114,12 @@ export class Installer {
 
         const artifacts = this.manifest.getArtifacts();
         const artifactInstallTasks = artifacts.map((a) => this.installArtifact(a));
+        for (const task of artifactInstallTasks) {
+            await new Listr([task]).run().catch(_.noop);
+        }
 
-        const tasks = new Listr(artifactInstallTasks);
-        await tasks.run().catch(_.noop);
+        // const tasks = new Listr(artifactInstallTasks);
+        // await tasks.run().catch(_.noop);
     }
 
     /**
@@ -138,15 +139,37 @@ export class Installer {
                 ctx.didInstall = false;
                 ctx.downloaded = false;
 
-                return !ctx.artifact.path;
+                return !ctx.artifact.path && ctx.artifact.url ? true : false;
             },
             task: async (ctx, task) => {
                 let total = 0;
                 let progress = new Progress({ width: 20, total: 100 });
-                ctx.artifact = await this.downloadArtifact(ctx.artifact, (percent) => {
-                    total = total + percent;
-                    task.output = `Downloading (${ctx.artifact.arch === Arch.x32 ? "x32" : "x64"}) [${progress(total)}] ${Math.round(total)}%`;
-                });
+
+                // ctx.artifact = await this.downloadArtifact(ctx.artifact, (percent) => {
+                //     total = total + percent;
+                //     task.output = `Downloading (${ctx.artifact.arch === Arch.x32 ? "x32" : "x64"}) [${progress(total)}] ${Math.round(total)}%`;
+                // });
+
+                if (!ctx.artifact.path && ctx.artifact.url) {
+                    ctx.artifact.path = await this.downloader.download(`${ctx.artifact.package}-${ctx.artifact.arch}`, ctx.artifact.url, false, (percent) => {
+                        total = total + percent;
+                        task.output = `Downloading (${ctx.artifact.arch === Arch.x32 ? "x32" : "x64"}) [${progress(total)}] ${Math.round(total)}%`;
+                    });
+                }
+
+                if (ctx.artifact.adds && !_.isEmpty(ctx.artifact.adds)) {
+                    for (let i = 0; i < ctx.artifact.adds.length; i++) {
+                        let add = ctx.artifact.adds[i];
+                        if (!add.path) {
+                            add.path = await this.downloader.download(`${ctx.artifact.package}-${ctx.artifact.arch}-add${i}`, add.url, false, (percent) => {
+                                total = total + percent;
+                                task.output = `Downloading (add${i}) [${progress(total)}] ${Math.round(total)}%`;
+                            });
+
+                            ctx.artifact.adds[i] = add;
+                        }
+                    }
+                }
 
                 ctx.downloaded = true;
             },
@@ -204,7 +227,7 @@ export class Installer {
 
         const removingArtifactTask: Listr.ListrTask<InstallerContext> = {
             title: "Removing artifact",
-            enabled: (ctx) => (ctx.artifact.path ? ctx.artifact.path.includes(os.tmpdir()) : false),
+            enabled: (ctx) => (ctx.artifact.path ? ctx.artifact.path.includes(this.env.osTempDirectory) : false),
             task: (ctx) =>
                 new Promise<void>((resolve, _) => {
                     this.remover.remove(ctx.artifact);
@@ -221,21 +244,5 @@ export class Installer {
                 });
             },
         };
-    }
-
-    /**
-     * Downloads a given artifact.
-     *
-     * @private
-     * @param {Artifact} artifact Artifact to download
-     * @returns {Promise<Artifact>} Downloaded artifact
-     * @memberof Installer
-     */
-    private async downloadArtifact(artifact: Artifact, progress?: ProgressCallback): Promise<Artifact> {
-        if (!artifact.path) {
-            artifact.path = await this.downloader.download(`${artifact.package}-${artifact.arch}`, artifact.url, false, progress);
-        }
-
-        return artifact;
     }
 }

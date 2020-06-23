@@ -1,4 +1,3 @@
-import os from "os";
 import fs from "fs-extra";
 import path from "path";
 import https from "https";
@@ -35,7 +34,7 @@ export class ArtifactsDownloader {
      * @memberof ArtifactsDownloader
      */
     public async download(filename: string, url: string, toRegistry?: boolean, progress?: ProgressCallback): Promise<string> {
-        const basepath = toRegistry ? this.env.assetsArtifactsDirectory : os.tmpdir();
+        const basepath = toRegistry ? this.env.assetsArtifactsDirectory : this.env.osTempDirectory;
         const ext = this.getFileExtension(url);
         const filepath = path.join(basepath, `${filename}${ext}`);
 

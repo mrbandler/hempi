@@ -20,5 +20,13 @@ export class ArtifactRemover {
         if (artifact.path && fs.existsSync(artifact.path)) {
             fs.unlinkSync(artifact.path);
         }
+
+        if (artifact.adds) {
+            for (const add of artifact.adds) {
+                if (add.path && fs.existsSync(add.path)) {
+                    fs.unlinkSync(add.path);
+                }
+            }
+        }
     }
 }
