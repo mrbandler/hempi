@@ -1,8 +1,0 @@
----
-packages:
-    Jetbrains Rider:
-        cmd: "echo '{file} /S /CONFIG {add1}'"
-        url:
-            x32: https://product-downloads.atlassian.com/software/sourcetree/windows/ga/SourcetreeEnterpriseSetup_3.3.9.msi
-            adds:
-                - https://download.jetbrains.com/idea/silent.config

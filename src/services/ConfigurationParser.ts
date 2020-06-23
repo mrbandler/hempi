@@ -37,18 +37,12 @@ export class ConfigurationParser {
             title: "Reading installer configuration",
             task: (ctx) => {
                 ctx.contents = this.read(filepath);
-            },
-        };
-
-        const parseTask: Listr.ListrTask<ParserContext> = {
-            title: "Parsing installer configuration",
-            task: (ctx) => {
                 ctx.configuration = yml.parse(ctx.contents) as InstallerConfiguration;
                 ctx.configuration = this.sanitizePaths(filepath, ctx.configuration);
             },
         };
 
-        const tasks = new Listr([readTask, parseTask]);
+        const tasks = new Listr([readTask]);
         const context = await tasks.run();
         return context.configuration;
 

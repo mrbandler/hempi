@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { exec } from "child_process";
 import { Service } from "typedi";
 import { Artifact } from "../../types/manifest";
@@ -30,19 +31,15 @@ export class CommandExecutor {
      * @memberof CommandExecutor
      */
     public async exec(artifact: Artifact): Promise<void> {
-        const command = this.createCommand(artifact);
-        if (command) {
-            return new Promise<void>((resolve, reject) => {
-                console.log(command);
-                exec(command, (error) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        resolve();
-                    }
-                });
+        return new Promise<void>((resolve, reject) => {
+            exec(this.createCommandArgs(artifact).join(" "), (error) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve();
+                }
             });
-        }
+        });
     }
 
     /**
@@ -53,12 +50,7 @@ export class CommandExecutor {
      * @memberof CommandExecutor
      */
     public getCommand(artifact: Artifact): string {
-        let result = this.createCommand(artifact);
-        if (!result) {
-            result = artifact.cmd ? artifact.cmd : artifact.path ? artifact.path : "";
-        }
-
-        return result;
+        return this.createCommandArgs(artifact).join(" ");
     }
 
     /**
@@ -71,22 +63,40 @@ export class CommandExecutor {
      * @returns {(string | undefined)} Created command
      * @memberof CommandExecutor
      */
-    private createCommand(artifact: Artifact): string | undefined {
-        let result: string | undefined = undefined;
+    private createCommandArgs(artifact: Artifact): string[] {
+        let result: string[] = [];
 
-        let cmd = artifact.cmd;
         if (artifact.path) {
+            const addMap = new Map<string, string>();
             if (artifact.adds) {
                 for (let i = 0; i < artifact.adds.length; i++) {
                     const add = artifact.adds[i];
                     if (add.path) {
                         const key = this.ADD.replace("#", `${i + 1}`);
-                        cmd.replace(key, add.path);
+                        addMap.set(key, add.path);
                     }
                 }
             }
 
-            result = cmd ? cmd.replace(this.FILE, `"${artifact.path}"`) : artifact.path;
+            result = artifact.cmd.split(" ").map((a) => {
+                let result = a;
+
+                if (a === this.FILE) {
+                    result = `"${artifact.path}"`;
+                } else if (addMap.has(a)) {
+                    result = addMap.get(a) as string;
+                } else {
+                    const reg = /{(.*)}/.exec(a);
+                    if (reg) {
+                        const match = _.first(reg);
+                        if (match) {
+                            result = a.replace(match, addMap.get(match) as string);
+                        }
+                    }
+                }
+
+                return result;
+            });
         }
 
         return result;

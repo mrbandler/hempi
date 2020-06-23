@@ -2,7 +2,7 @@ import _ from "lodash";
 import Listr from "listr";
 import Progress from "progress-string";
 import { Service, Inject } from "typedi";
-import { Artifact, Script, Arch, Add } from "../../types/manifest";
+import { Artifact, Script, Arch } from "../../types/manifest";
 import { Environment } from "./Environment";
 import { AssetManifestManager } from "./AssetsManifest";
 import { ArtifactsDownloader } from "./ArtifactDownloader";
@@ -10,7 +10,6 @@ import { CommandExecutor } from "./CommandExecutor";
 import { ScriptExecutor } from "./ScriptExecutor";
 import { ArtifactRemover } from "./ArtifactRemover";
 import { ArtifactExtractor } from "./ArtifactExtractor";
-import { ProgressCallback } from "../../types/progress";
 
 /**
  * Installer context, to be passed in the installation task chain.
@@ -140,17 +139,37 @@ export class Installer {
                 ctx.didInstall = false;
                 ctx.downloaded = false;
 
-                return !ctx.artifact.path && artifact.url ? true : false;
+                return !ctx.artifact.path && ctx.artifact.url ? true : false;
             },
             task: async (ctx, task) => {
                 let total = 0;
                 let progress = new Progress({ width: 20, total: 100 });
-                console.log(ctx.artifact.adds);
 
-                ctx.artifact = await this.downloadArtifact(ctx.artifact, (percent) => {
-                    total = total + percent;
-                    task.output = `Downloading (${ctx.artifact.arch === Arch.x32 ? "x32" : "x64"}) [${progress(total)}] ${Math.round(total)}%`;
-                });
+                // ctx.artifact = await this.downloadArtifact(ctx.artifact, (percent) => {
+                //     total = total + percent;
+                //     task.output = `Downloading (${ctx.artifact.arch === Arch.x32 ? "x32" : "x64"}) [${progress(total)}] ${Math.round(total)}%`;
+                // });
+
+                if (!ctx.artifact.path && ctx.artifact.url) {
+                    ctx.artifact.path = await this.downloader.download(`${ctx.artifact.package}-${ctx.artifact.arch}`, ctx.artifact.url, false, (percent) => {
+                        total = total + percent;
+                        task.output = `Downloading (${ctx.artifact.arch === Arch.x32 ? "x32" : "x64"}) [${progress(total)}] ${Math.round(total)}%`;
+                    });
+                }
+
+                if (ctx.artifact.adds && !_.isEmpty(ctx.artifact.adds)) {
+                    for (let i = 0; i < ctx.artifact.adds.length; i++) {
+                        let add = ctx.artifact.adds[i];
+                        if (!add.path) {
+                            add.path = await this.downloader.download(`${ctx.artifact.package}-${ctx.artifact.arch}-add${i}`, add.url, false, (percent) => {
+                                total = total + percent;
+                                task.output = `Downloading (add${i}) [${progress(total)}] ${Math.round(total)}%`;
+                            });
+
+                            ctx.artifact.adds[i] = add;
+                        }
+                    }
+                }
 
                 ctx.downloaded = true;
             },
@@ -225,33 +244,5 @@ export class Installer {
                 });
             },
         };
-    }
-
-    /**
-     * Downloads a given artifact.
-     *
-     * @private
-     * @param {Artifact} artifact Artifact to download
-     * @returns {Promise<Artifact>} Downloaded artifact
-     * @memberof Installer
-     */
-    private async downloadArtifact(artifact: Artifact, progress?: ProgressCallback): Promise<Artifact> {
-        if (!artifact.path && artifact.url) {
-            artifact.path = await this.downloader.download(`${artifact.package}-${artifact.arch}`, artifact.url, false, progress);
-        }
-
-        if (artifact.adds && !_.isEmpty(artifact.adds)) {
-            for (let i = 0; i < artifact.adds.length; i++) {
-                let add = artifact.adds[i];
-
-                if (!add.path) {
-                    add.path = await this.downloader.download(`${artifact.package}-${artifact.arch}-add${i}`, add.url, false, progress);
-                }
-
-                artifact.adds[i] = add;
-            }
-        }
-
-        return artifact;
     }
 }
