@@ -93,8 +93,9 @@ export class ConfigurationParser {
                 if (configuration.packages.hasOwnProperty(name)) {
                     const pkg = configuration.packages[name];
 
-                    if (pkg.script) {
-                        pkg.script = path.join(path.dirname(filepath), pkg.script);
+                    if (pkg.scripts) {
+                        pkg.scripts.pre = pkg.scripts.pre ? path.join(path.dirname(filepath), pkg.scripts.pre) : undefined;
+                        pkg.scripts.post = pkg.scripts.post ? path.join(path.dirname(filepath), pkg.scripts.post) : undefined;
                     }
                 }
             }

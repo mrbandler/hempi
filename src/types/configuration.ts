@@ -7,6 +7,18 @@
 export interface Urls {
     x32: string;
     x64?: string;
+    adds?: string[];
+}
+
+/**
+ * Scripts for the package.
+ *
+ * @export
+ * @interface Scripts
+ */
+export interface Scripts {
+    pre?: string;
+    post?: string;
 }
 
 /**
@@ -16,9 +28,9 @@ export interface Urls {
  * @interface Package
  */
 export interface Package {
-    url: Urls;
-    cmd?: string;
-    script?: string;
+    cmd: string;
+    url?: Urls;
+    scripts?: Scripts;
 }
 
 /**

@@ -116,9 +116,12 @@ export class Installer {
 
         const artifacts = this.manifest.getArtifacts();
         const artifactInstallTasks = artifacts.map((a) => this.installArtifact(a));
+        for (const task of artifactInstallTasks) {
+            await new Listr([task]).run().catch(_.noop);
+        }
 
-        const tasks = new Listr(artifactInstallTasks);
-        await tasks.run().catch(_.noop);
+        // const tasks = new Listr(artifactInstallTasks);
+        // await tasks.run().catch(_.noop);
     }
 
     /**
@@ -138,7 +141,7 @@ export class Installer {
                 ctx.didInstall = false;
                 ctx.downloaded = false;
 
-                return !ctx.artifact.path;
+                return !ctx.artifact.path && artifact.url ? true : false;
             },
             task: async (ctx, task) => {
                 let total = 0;
@@ -232,8 +235,12 @@ export class Installer {
      * @memberof Installer
      */
     private async downloadArtifact(artifact: Artifact, progress?: ProgressCallback): Promise<Artifact> {
-        if (!artifact.path) {
+        if (!artifact.path && artifact.url) {
             artifact.path = await this.downloader.download(`${artifact.package}-${artifact.arch}`, artifact.url, false, progress);
+        }
+
+        if (artifact.adds) {
+            for (let i = 0; i < artifact.adds.length; i++) {}
         }
 
         return artifact;

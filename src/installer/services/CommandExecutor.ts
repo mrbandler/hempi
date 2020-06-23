@@ -20,6 +20,7 @@ export class CommandExecutor {
      * @memberof CommandExecutor
      */
     private readonly FILE: string = "{file}";
+    private readonly ADD: string = "{add#}";
 
     /**
      * Executes the commands associated with a given artifact.
@@ -73,8 +74,17 @@ export class CommandExecutor {
     private createCommand(artifact: Artifact): string | undefined {
         let result: string | undefined = undefined;
 
+        let cmd = artifact.cmd;
         if (artifact.path) {
-            result = artifact.cmd ? artifact.cmd.replace(this.FILE, `"${artifact.path}"`) : artifact.path;
+            if (artifact.adds) {
+                for (let i = 0; i < artifact.adds.length; i++) {
+                    const add = artifact.adds[i];
+                    const key = this.ADD.replace("#", `${i + 1}`);
+                    cmd.replace(key, add);
+                }
+            }
+
+            result = cmd ? cmd.replace(this.FILE, `"${artifact.path}"`) : artifact.path;
         }
 
         return result;

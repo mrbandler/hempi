@@ -51,6 +51,10 @@ export class AssetManifestManager {
                     a.path = path.join(this.env.assetsDirectory, a.path);
                 }
 
+                if (a.adds) {
+                    a.adds = a.adds.map((add) => path.join(this.env.assetsDirectory, add));
+                }
+
                 return a;
             });
 

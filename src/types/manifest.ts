@@ -17,10 +17,22 @@ export enum Arch {
  */
 export interface Artifact {
     package: string;
-    arch: Arch;
-    url: string;
-    cmd?: string;
+    cmd: string;
+    url?: string;
+    adds?: string[];
+    arch?: Arch;
     path?: string;
+}
+
+/**
+ * Script type.
+ *
+ * @export
+ * @enum {number}
+ */
+export enum ScriptType {
+    Pre = "Pre",
+    Post = "Post",
 }
 
 /**
@@ -31,6 +43,7 @@ export interface Artifact {
  */
 export interface Script {
     package: string;
+    type: ScriptType;
     path: string;
 }
 
