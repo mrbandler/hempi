@@ -36,7 +36,7 @@ export class InstallerPackager {
                 title: "Packaging installer",
                 task: async () => {
                     console.log = function () {}; //! This is very bad! But it locks awful in the CLI output, considering creating a PR for pgk and enable output by parameter.
-                    await exec([`${this.env.installerDirectory}/package.json`, "-t", "host", "-o", path]);
+                    await exec([`${this.env.installerDirectory}/package.json`, "-t", "node12-win", "-o", path]);
                 },
             },
         ]).run();
