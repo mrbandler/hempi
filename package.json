@@ -1,6 +1,6 @@
 {
     "name": "hempi",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "description": "Hempi - Highly Elaborate Multi-Package Installer",
     "repository": "git@github.com:mrbandler/hempi.git",
     "author": "mrbandler <mrbandler@fivefingergames.com>",
@@ -10,13 +10,6 @@
     "bugs": {
         "url": "https://github.com/mrbandler/hempi/issues"
     },
-    "os": [
-        "win32"
-    ],
-    "cpu": [
-        "x64",
-        "x32"
-    ],
     "bin": {
         "hempi": "./bin/hempi.js"
     },
