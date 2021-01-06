@@ -22,7 +22,7 @@
         "build:link": "yarn build && npm link"
     },
     "dependencies": {
-        "axios": "^0.19.2",
+        "axios": "^0.21.1",
         "commander": "^5.1.0",
         "download": "^8.0.0",
         "fs-extra": "^9.0.1",
